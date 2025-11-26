@@ -1,0 +1,11 @@
+name: env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python
+  - numpy
+  - pygmo
+  - yaml
+  - pyyaml
+prefix: /home/santjami/miniconda/envs/env
