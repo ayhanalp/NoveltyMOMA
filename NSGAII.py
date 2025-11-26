@@ -1,4 +1,7 @@
 import random
+import torch
+import numpy as np
+import math
 import pygmo as pg
 
 import Algorithm
@@ -15,6 +18,13 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
             ind.reset_fitness()
             # Condcut rollout
             trajectory, fitness_dict = self.interface.rollout(ind.joint_policy)
+
+            # trajectory
+            traj_entropy = self.compute_entropy(trajectory)
+            print("trajectory: ", trajectory)
+            beta = 0.3
+            fitness_dict = fitness_dict + beta * traj_entropy
+
             if len(fitness_dict) != self.num_objs:
                 raise ValueError(f"[NSGA-II] Expected {self.num_objs} objectives, but got {len(fitness_dict)}.")
             # Store the rollout trajectory
@@ -66,3 +76,28 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
         self.pop.extend(offspring_set)
 
         random.shuffle(self.pop) # NOTE: This is so that equally dominnat offpsrings in later indices don't just get thrown out
+
+    def compute_entropy(self, trajectory):
+
+        if len(trajectory) == 0:
+            return torch.tensor(1.0)
+
+        episodic_memory_tensor = torch.stack(trajectory, dim=0)
+
+        entropy = 0.0
+        for state_i in episodic_memory_tensor:
+            s_dist = torch.cdist(state_i.unsqueeze(0), episodic_memory_tensor, p=2,
+                                 compute_mode='use_mm_for_euclid_dist').squeeze(0).sort()[0]
+            s_dist = np.array(s_dist)
+
+            # self.args.k = 5  # was the default
+            # k = params.args.k
+            k = 5
+            k_H = k + 1
+            for k_i in range(k_H):
+                if len(s_dist) == k_i:
+                    break
+                else:
+                    entropy += math.log(s_dist[k_i] + 1)
+
+        return entropy / len(trajectory)
