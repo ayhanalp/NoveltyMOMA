@@ -18,12 +18,11 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
             ind.reset_fitness()
             # Condcut rollout
             trajectory, fitness_dict = self.interface.rollout(ind.joint_policy)
-
-            # trajectory
+            # Compute the trajectory;s entropy
             traj_entropy = self.compute_entropy(trajectory)
-            print("trajectory: ", trajectory)
-            beta = 0.3
-            fitness_dict = fitness_dict + beta * traj_entropy
+            print("trajectory entropy: ", traj_entropy)
+            # beta = 0.3
+            # fitness_dict = fitness_dict + beta * traj_entropy
 
             if len(fitness_dict) != self.num_objs:
                 raise ValueError(f"[NSGA-II] Expected {self.num_objs} objectives, but got {len(fitness_dict)}.")
@@ -76,28 +75,76 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
         self.pop.extend(offspring_set)
 
         random.shuffle(self.pop) # NOTE: This is so that equally dominnat offpsrings in later indices don't just get thrown out
-
+    
     def compute_entropy(self, trajectory):
+        """
+        Computes the average entropy of the joint position over the episode 
+        using KNN entropy estimation.
+        """
+        # Safety check for empty trajectory
+        if not trajectory or len(trajectory) == 0:
+            return 0.0
 
-        if len(trajectory) == 0:
-            return torch.tensor(1.0)
+        num_agents = len(trajectory)
+        episode_length = len(trajectory[0])
 
-        episodic_memory_tensor = torch.stack(trajectory, dim=0)
+        # ---------------------------------------------------------
+        # 1. Process trajectory to extract Joint Positions
+        # Target Shape: (Episode_Length, Num_Agents * Position_Dim)
+        # ---------------------------------------------------------
+        joint_positions = []
 
-        entropy = 0.0
-        for state_i in episodic_memory_tensor:
-            s_dist = torch.cdist(state_i.unsqueeze(0), episodic_memory_tensor, p=2,
-                                 compute_mode='use_mm_for_euclid_dist').squeeze(0).sort()[0]
-            s_dist = np.array(s_dist)
+        for t in range(episode_length):
+            timestep_pos = []
+            for agent_i in range(num_agents):
+                # Extract position from the specific agent at specific time
+                pos = trajectory[agent_i][t]['position']
+                
+                # Handle inconsistent data types (numpy array vs list vs np.float32)
+                if isinstance(pos, np.ndarray):
+                    pos = pos.tolist()
+                
+                # Ensure all elements are standard python floats
+                # (The example data contained mixed lists of int and np.float32)
+                pos = [float(x) for x in pos]
+                
+                timestep_pos.extend(pos)
+            
+            joint_positions.append(timestep_pos)
 
-            # self.args.k = 5  # was the default
-            # k = params.args.k
-            k = 5
-            k_H = k + 1
-            for k_i in range(k_H):
-                if len(s_dist) == k_i:
-                    break
-                else:
-                    entropy += math.log(s_dist[k_i] + 1)
+        # Convert to torch tensor for efficient matrix math
+        # Shape: (N, D) where N = Timesteps, D = Joint Dimension
+        data = torch.tensor(joint_positions, dtype=torch.float32)
 
-        return entropy / len(trajectory)
+        # ---------------------------------------------------------
+        # 2. KNN Entropy Estimation
+        # ---------------------------------------------------------
+        N = data.shape[0]
+        k = 5  # The 'k' for k-Nearest Neighbors
+        
+        # Edge case: If episode is shorter than k, we cannot compute k-th neighbor
+        if N <= k:
+            return 0.0
+
+        # Compute pairwise Euclidean distances matrix
+        # Shape: (N, N)
+        dists = torch.cdist(data, data, p=2)
+
+        # Find the k-th nearest neighbor for each point.
+        # We look for the (k+1) smallest values because the 0-th neighbor 
+        # is the point itself (distance = 0).
+        # values[:, k] extracts the distance to the actual k-th neighbor.
+        knn_dists = dists.topk(k + 1, largest=False).values[:, k]
+
+        # ---------------------------------------------------------
+        # 3. Compute Entropy Value
+        # ---------------------------------------------------------
+        # The Kozachenko-Leonenko estimator states H is proportional to mean(log(distance)).
+        # We add a small epsilon to prevent log(0) if agents return to exact same pixel.
+        epsilon = 1e-12 
+        log_dists = torch.log(knn_dists + epsilon)
+        
+        # Average over the episode
+        avg_entropy = torch.mean(log_dists).item()
+
+        return avg_entropy
