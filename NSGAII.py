@@ -7,8 +7,21 @@ import pygmo as pg
 import Algorithm
 
 class NSGAII(Algorithm.CentralisedAlgorithm):
-    def __init__(self, alg_config_filename, domain_name, rover_config_filename, data_filename):
+    def __init__(
+        self,
+        alg_config_filename,
+        domain_name,
+        rover_config_filename,
+        data_filename,
+        intrinsic_type="none",          # "none", "entropy", "novelty"
+        intrinsic_usage="reward"        # "reward", "objective"
+    ):
         super().__init__(alg_config_filename, domain_name, rover_config_filename, data_filename)
+        
+        self.intrinsic_type = intrinsic_type
+        self.intrinsic_usage = intrinsic_usage
+
+        self.archive = []  # For novelty
 
     def evolve(self, gen=0, traj_write_freq=100):
         """Evolve the population using NSGA-II."""
@@ -18,12 +31,27 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
             ind.reset_fitness()
             # Condcut rollout
             trajectory, fitness_dict = self.interface.rollout(ind.joint_policy)
+            
+            ############ Intrinsic Goodness ############
+            intrinsic_val = None
+            
+            if self.intrinsic_type != "none":
+                # Extract positions for intrinsic reward (one agent or aggregated - use Agent 0 for now)
+                pos_traj = np.array([step["position"] for step in trajectory[0]])  # shape (T, D)
+                intrinsic_val = self.compute_intrinsic(pos_traj)
+                
+                # Calculate novelty or entropy and either distribute across all rewards or store as another objective
+                match self.intrinsic_usage:
+                    case "reward":
+                        beta = 0.3
+                        fitness_dict["reward"] += beta * intrinsic_val
 
-            # trajectory
-            traj_entropy = self.compute_entropy(trajectory)
-            print("trajectory: ", trajectory)
-            beta = 0.3
-            fitness_dict = fitness_dict + beta * traj_entropy
+                    case "objective":
+                        fitness_dict["intrinsic"] = intrinsic_val
+
+            # Add mean state to archive if novelty
+            if self.intrinsic_type == "novelty":
+                self.archive.append(pos_traj.mean(axis=0))
 
             if len(fitness_dict) != self.num_objs:
                 raise ValueError(f"[NSGA-II] Expected {self.num_objs} objectives, but got {len(fitness_dict)}.")
@@ -78,6 +106,7 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
         random.shuffle(self.pop) # NOTE: This is so that equally dominnat offpsrings in later indices don't just get thrown out
 
     def compute_entropy(self, trajectory):
+        """Computes the kNN entropy of a single agent's trajectory"""
 
         if len(trajectory) == 0:
             return torch.tensor(1.0)
@@ -101,3 +130,34 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
                     entropy += math.log(s_dist[k_i] + 1)
 
         return entropy / len(trajectory)
+    
+    def compute_novelty(self, trajectory, archive, k=10):
+        """Reduces trajectory to mean state and computes knn distance (novelty) to all other archived trajectories """
+        # Compute trajectory mean state
+        traj_tensor = torch.stack(trajectory, dim=0)  # shape: (T, D)
+        mean_states = traj_tensor.mean(dim=0).cpu().numpy()  # shape: (D,)
+
+        if len(archive) == 0:
+            return 0.0
+        else:
+            # Euclidean distance to all mean states in archive
+            dists = [np.linalg.norm(mean_states - past_mean) for past_mean in archive]
+
+            # k nearest distances
+            k = min(k, len(dists))
+            nearest_distances = sorted(dists)[:k]
+            novelty = float(np.mean(nearest_distances))
+
+        return novelty
+    
+    def compute_intrinsic(self, trajectory):
+        """Compute entropy or novelty based on intrinsic_type."""
+        match self.intrinsic_type:
+            case "none":
+                return None
+            case "entropy":
+                return self.compute_entropy(trajectory)
+            case "novelty":
+                return self.compute_novelty(trajectory, self.archive)
+            case _:
+                raise ValueError(f"Unknown intrinsic_type: {self.intrinsic_type}")
