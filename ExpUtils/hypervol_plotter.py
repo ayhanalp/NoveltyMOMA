@@ -90,8 +90,8 @@ def compute_hv_for_file(csv_file, baseline_scale):
     computes the Non-dominated Front for each generation,
     and returns a dictionary: gen -> hypervolume.
     """
-    df = pd.read_csv(csv_file, usecols=["gen", "fitness"])
-    df["fitness_list"] = df["fitness"].apply(lambda x: ast.literal_eval(x))
+    df = pd.read_csv(csv_file, usecols=["gen", "raw_fitness"])
+    df["fitness_list"] = df["raw_fitness"].apply(lambda x: ast.literal_eval(x))
     
     hv_dict = {}
     for g in sorted(df["gen"].unique()):

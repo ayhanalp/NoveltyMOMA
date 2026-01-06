@@ -26,7 +26,8 @@ class Individual:
     def reset_fitness(self):
         """Zero the fitness of the individual."""
         self.fitness = [-1 for _ in range(self.num_objs)]
-    
+        self.raw_fitness = [-1 for _ in range(self.num_objs)]
+
     def mutate(self):
         """Mutate each policy in the joint policy"""
         for p in self.joint_policy:

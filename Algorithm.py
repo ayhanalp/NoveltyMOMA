@@ -21,6 +21,8 @@ class CentralisedAlgorithm:
         self.data_logger = ExpUtils.DataLogger.DataLogger(data_fields=['gen',
                                                                        'id',
                                                                        'fitness',
+                                                                       'raw_fitness',
+                                                                       'traj_entropy',
                                                                        'trajectory'],
                                                                        target_filename=self.data_filename)
 

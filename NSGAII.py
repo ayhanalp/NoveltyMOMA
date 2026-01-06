@@ -6,6 +6,8 @@ import pygmo as pg
 
 import Algorithm
 
+ENTROPY = False
+
 class NSGAII(Algorithm.CentralisedAlgorithm):
     def __init__(self, alg_config_filename, domain_name, rover_config_filename, data_filename):
         super().__init__(alg_config_filename, domain_name, rover_config_filename, data_filename)
@@ -18,14 +20,16 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
             ind.reset_fitness()
             # Conduct rollout
             trajectory, fitness_dict = self.interface.rollout(ind.joint_policy)
-            # Compute the trajectory;s entropy
+            # Compute the trajectory's entropy
             traj_entropy = self.compute_entropy(trajectory)
             print("trajectory entropy: ", traj_entropy)
             
             # Distribute entropy into fitness components
             weights = {0: 0.1, 1: 0.1}  # Entropy scaling factors for each objective
-            for f in fitness_dict:
-                fitness_dict[f] += weights[f] * traj_entropy
+            raw_fitness_dict = fitness_dict.copy()
+            if ENTROPY:
+                for f in fitness_dict:
+                    fitness_dict[f] += weights[f] * traj_entropy
             
             #fitness_dict = fitness_dict + beta * traj_entropy
 
@@ -36,11 +40,14 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
             # Store fitness
             for f in fitness_dict:
                 ind.fitness[f] = -fitness_dict[f] # NOTE: The fitness sign is flipped to match Pygmo convention
-            
+                ind.raw_fitness[f] = -raw_fitness_dict[f]  # unshaped, for evaluation
+
             # Add this individual's data to the logger
             self.data_logger.add_data(key='gen', value=gen)
             self.data_logger.add_data(key='id', value=ind.id)
             self.data_logger.add_data(key='fitness', value=ind.fitness)
+            self.data_logger.add_data(key='raw_fitness', value=ind.raw_fitness)
+            self.data_logger.add_data(key='traj_entropy', value=traj_entropy)
             if gen == self.num_gens - 1 or gen % traj_write_freq == 0:
                 self.data_logger.add_data(key='trajectory', value=ind.trajectory)
             else:
