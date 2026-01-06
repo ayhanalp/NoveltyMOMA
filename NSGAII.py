@@ -16,13 +16,18 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
         for ind in self.pop:
             # Reset the fitness
             ind.reset_fitness()
-            # Condcut rollout
+            # Conduct rollout
             trajectory, fitness_dict = self.interface.rollout(ind.joint_policy)
             # Compute the trajectory;s entropy
             traj_entropy = self.compute_entropy(trajectory)
             print("trajectory entropy: ", traj_entropy)
-            # beta = 0.3
-            # fitness_dict = fitness_dict + beta * traj_entropy
+            
+            # Distribute entropy into fitness components
+            weights = {0: 0.1, 1: 0.1}  # Entropy scaling factors for each objective
+            for f in fitness_dict:
+                fitness_dict[f] += weights[f] * traj_entropy
+            
+            #fitness_dict = fitness_dict + beta * traj_entropy
 
             if len(fitness_dict) != self.num_objs:
                 raise ValueError(f"[NSGA-II] Expected {self.num_objs} objectives, but got {len(fitness_dict)}.")
