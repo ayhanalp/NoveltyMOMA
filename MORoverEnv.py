@@ -108,6 +108,44 @@ class MORoverEnv:
             print('[MORoverEnv]: YAML config read.')
 
         self._load_config()
+
+    def _generate_pois(self):
+        poi_cfg = self.config_data['POI_Generation']
+
+        if poi_cfg['mode'] == 'fixed':
+            return [POI(**poi) for poi in self.config_data['Environment']['pois']]
+
+        elif poi_cfg['mode'] == 'concentric_rings':
+            center = np.array(poi_cfg['center'], dtype=float)
+            pois = []
+
+            for ring in poi_cfg['rings']:
+                num = ring['num_pois']
+                base_r = ring['radius']
+                jitter = ring.get('radius_jitter', 0.0)
+
+                for i in range(num):
+                    theta = 2 * np.pi * i / num
+                    r = base_r + np.random.uniform(-jitter, jitter)
+
+                    loc = center + r * np.array([np.cos(theta), np.sin(theta)])
+
+                    pois.append(
+                        POI(
+                            obj=ring['obj'],
+                            location=loc.tolist(),
+                            radius=ring['poi_radius'],
+                            coupling=ring['coupling'],
+                            obs_window=ring['obs_window'],
+                            reward=ring['reward'],
+                            repeat=ring['repeat']
+                        )
+                    )
+
+            return pois
+
+        else:
+            raise ValueError(f"Unknown POI generation mode: {poi_cfg['mode']}")
     
     def _load_config(self):
         """Load internal environment configuration."""
@@ -126,7 +164,7 @@ class MORoverEnv:
         self.include_location_in_obs = self.config_data['Environment']['include_location_in_obs']
 
         # Initialize POIs and store initial configuration
-        self.pois = [POI(**poi) for poi in self.config_data['Environment']['pois']]
+        self.pois = self._generate_pois()
         self._initial_pois = copy.deepcopy(self.pois)  # Save initial state for reset
 
     def reset(self):
@@ -395,3 +433,37 @@ class MORoverEnv:
     
     def get_dimensions(self):
         return self.dimensions
+ 
+    def sample_agent_start_locations(self):
+        cfg = self.config_data['Agents']
+
+        if cfg['start_mode'] == 'fixed':
+            return copy.deepcopy(cfg['starting_locs'])
+
+        elif cfg['start_mode'] == 'random_circle':
+            center = np.array(cfg['start_center'], dtype=float)
+            radius = cfg['start_radius']
+            min_sep = cfg.get('min_start_separation', 0.0)
+            n = cfg['num_agents']
+
+            locs = []
+            attempts = 0
+            max_attempts = 1000
+
+            while len(locs) < n:
+                if attempts > max_attempts:
+                    raise RuntimeError("Could not sample non-overlapping agent starts")
+
+                theta = np.random.uniform(0, 2*np.pi)
+                r = np.random.uniform(0, radius)
+                candidate = (center + r * np.array([np.cos(theta), np.sin(theta)])).tolist()
+
+                if all(math.dist(candidate, other) >= min_sep for other in locs):
+                    locs.append(candidate)
+
+                attempts += 1
+
+            return locs
+
+        else:
+            raise ValueError(f"Unknown start_mode: {cfg['start_mode']}")

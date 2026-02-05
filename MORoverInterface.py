@@ -34,7 +34,7 @@ class MORoverInterface():
             raise ValueError("The supplied joint policy should be a list of Policy type objects")
 
         ep_length = self.rover_env.get_ep_length()
-        agent_locations = self.config['Agents']['starting_locs']  # set each agent to the starting location
+        agent_locations = self.rover_env.sample_agent_start_locations()
         num_sensors = self.config['Agents']['num_sensors']
         observation_radii = self.config['Agents']['observation_radii']
         max_step_sizes = self.config['Agents']['max_step_sizes']
@@ -129,7 +129,7 @@ class MORoverInterface():
         Get the number of agents that must be deployed in a rollout. Team size.
         '''
         # team size is implicitly recorded by the length of starting locations
-        return len(self.config['Agents']['starting_locs'])
+        return self.config['Agents']['num_agents']
     
     def get_num_objs(self):
         '''

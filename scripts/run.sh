@@ -23,8 +23,8 @@ ALG_NAME="nsga2"
 DOMAIN="rover"
 DATA_DIR="$REPO_ROOT/data"
 
-ALG_CONFIG="config/trap/1ag_trap_30kgens_DMOConfig.yaml"
-ENV_CONFIG="config/trap/1ag_trap_30kgens_MORoverEnvConfig.yaml"
+ALG_CONFIG="config/generic/generic_DMOConfig.yaml"
+ENV_CONFIG="config/generic/generic_MORoverEnvConfig.yaml"
 
 SEED=2024
 LABEL="test"
