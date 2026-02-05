@@ -4,6 +4,8 @@ import numpy
 import sys
 import datetime
 import shutil # for file management
+import os
+import re
 
 import algorithms.NSGAII as NSGAII
 import algorithms.KParentNSGAII as KParentNSGAII
@@ -28,14 +30,52 @@ if __name__ == '__main__':
     traj_write_freq = int(sys.argv[8])
 
     # Datetime for file naming
-    datetime_now_string = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    datetime_now_string = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+
+    # Sanitize label for filesystem safety
+    safe_label = label.replace(' ', '_').replace('/', '_')
+    
+    # Find existing runs with the same label
+    existing = [
+        d for d in os.listdir(data_dir)
+        if os.path.isdir(os.path.join(data_dir, d))
+        and re.match(rf"^{re.escape(safe_label)}_\d+$", d)
+    ]
+
+    # Extract run numbers
+    run_nums = [
+        int(d.split('_')[-1]) for d in existing
+    ]
+
+    next_run_num = max(run_nums) + 1 if run_nums else 1
+    
+    # Create a run-specific subdirectory
+    run_id = f"{safe_label}_{next_run_num}"
+    run_dir = os.path.join(data_dir, run_id)
+    os.makedirs(run_dir, exist_ok=False)
+    print(f"Data will be saved to directory: {run_dir}")
+    
+    # Save the metadata
+    metadata_path = os.path.join(run_dir, 'metadata.txt')
+
+    with open(metadata_path, 'w') as f:
+        f.write(f"algorithm: {alg_name}\n")
+        f.write(f"domain: {domain_name}\n")
+        f.write(f"seed: {seed_val}\n")
+        f.write(f"label: {label}\n")
+        f.write(f"run_number: {next_run_num}\n")
+        f.write(f"traj_write_freq: {traj_write_freq}\n")
+        f.write(f"datetime: {datetime_now_string}\n")
+        f.write(f"alg_config_source: {src_alg_config_filename}\n")
+        f.write(f"env_config_source: {src_env_config_filename}\n")
 
     # Save data filename
-    data_filename = data_dir+alg_name+'_'+domain_name+'_'+seed_val_str+'_'+label+'_'+datetime_now_string+'_savedata.csv'
+    data_filename = os.path.join(run_dir, 'savedata.csv')
+    
     # Create copy of configs at save data location
-    dest_alg_config_filename = data_dir+alg_name+'_'+domain_name+'_'+seed_val_str+'_'+label+'_'+datetime_now_string+'_algconfig.yaml'
+    dest_alg_config_filename = os.path.join(run_dir, 'algconfig.yaml')
     shutil.copyfile(src_alg_config_filename, dest_alg_config_filename)
-    dest_env_config_filename = data_dir+alg_name+'_'+domain_name+'_'+seed_val_str+'_'+label+'_'+datetime_now_string+'_envconfig.yaml'
+    dest_env_config_filename = os.path.join(run_dir, 'envconfig.yaml')
     shutil.copyfile(src_env_config_filename, dest_env_config_filename)
 
     # Set the seed value for all libraries
