@@ -1,19 +1,51 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-#conda activate env
+# -----------------------------
+# Resolve repo root robustly
+# -----------------------------
+# This gets the directory where *this script* lives,
+# then assumes the repo root is the parent (adjust if needed)
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+REPO_ROOT="$( cd "$SCRIPT_DIR/.." &> /dev/null && pwd )"
 
-#python main.py nsga2 rover \
-#    "/home/santjami/repos/NoveltyMOMA/data/" \
-#    "/home/santjami/repos/NoveltyMOMA/config/trap/4ag_trap_30kgens_DMOConfig.yaml" \
-#    "/home/santjami/repos/NoveltyMOMA/config/trap/4ag_trap_30kgens_MORoverEnvConfig.yaml" \
-#    2024 \
-#    test1 \
-#    10
+# -----------------------------
+# (Optional) activate conda env
+# -----------------------------
+# Uncomment and edit if needed
+# source "$(conda info --base)/etc/profile.d/conda.sh"
+# conda activate env
 
-python main.py nsga2 rover \
-    "/home/santjami/repos/NoveltyMOMA/data/" \
-    "/home/santjami/repos/NoveltyMOMA/config/trap/1ag_trap_30kgens_DMOConfig.yaml" \
-    "/home/santjami/repos/NoveltyMOMA/config/trap/1ag_trap_30kgens_MORoverEnvConfig.yaml" \
-    2024 \
-    negh1ag_01beta_10k \
-    50
+# -----------------------------
+# Experiment parameters
+# -----------------------------
+ALG_NAME="nsga2"
+DOMAIN="rover"
+DATA_DIR="$REPO_ROOT/data"
+
+ALG_CONFIG="config/trap/1ag_trap_30kgens_DMOConfig.yaml"
+ENV_CONFIG="config/trap/1ag_trap_30kgens_MORoverEnvConfig.yaml"
+
+SEED=2024
+LABEL="test"
+TRAJ_WRITE_FREQ=50
+
+# -----------------------------
+# Sanity checks
+# -----------------------------
+[[ -d "$DATA_DIR" ]] || { echo "Data dir not found: $DATA_DIR"; exit 1; }
+[[ -f "$REPO_ROOT/$ALG_CONFIG" ]] || { echo "Alg config not found: $ALG_CONFIG"; exit 1; }
+[[ -f "$REPO_ROOT/$ENV_CONFIG" ]] || { echo "Env config not found: $ENV_CONFIG"; exit 1; }
+
+# -----------------------------
+# Run experiment
+# -----------------------------
+python "$REPO_ROOT/main.py" \
+    "$ALG_NAME" \
+    "$DOMAIN" \
+    "$DATA_DIR" \
+    "$REPO_ROOT/$ALG_CONFIG" \
+    "$REPO_ROOT/$ENV_CONFIG" \
+    "$SEED" \
+    "$LABEL" \
+    "$TRAJ_WRITE_FREQ"
