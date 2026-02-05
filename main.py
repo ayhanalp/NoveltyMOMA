@@ -66,5 +66,13 @@ if __name__ == '__main__':
                                 rover_config_filename=dest_env_config_filename)
     
     # Run the algorithm
-    for gen in range(alg.num_gens):
+    next_print = 0.0  # percent
+    num_gens = alg.num_gens
+
+    for gen in range(num_gens):
+        percent = (gen / num_gens) * 100
+
+        if percent >= next_print:
+            print(f"Progress: {int(next_print)}% ({gen}/{num_gens})")
+            next_print += 1.0
         alg.evolve(gen=gen, traj_write_freq=traj_write_freq)
