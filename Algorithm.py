@@ -5,7 +5,6 @@ import torch
 import numpy
 
 import MORoverInterface
-import MOBeachInterface
 import Policy
 import Individual
 import Utils
@@ -26,10 +25,7 @@ class CentralisedAlgorithm:
                                                                        'trajectory'],
                                                                        target_filename=self.data_filename)
 
-        if domain_name == "rover":
-            self.interface = MORoverInterface.MORoverInterface(domain_config_filename)
-        elif domain_name == "beach":
-            self.interface = MOBeachInterface.MOBeachInterface(domain_config_filename)
+        self.interface = MORoverInterface.MORoverInterface(domain_config_filename)
         
         self.team_size = self.interface.get_team_size()
         self.num_objs = self.interface.get_num_objs()
@@ -77,10 +73,7 @@ class CoevolutionaryAlgorithm:
                                                                        'trajectory'],
                                                                        target_filename=self.data_filename)
 
-        if domain_name == "rover":
-            self.interface = MORoverInterface.MORoverInterface(domain_config_filename)
-        elif domain_name == "beach":
-            self.interface = MOBeachInterface.MOBeachInterface(domain_config_filename)
+        self.interface = MORoverInterface.MORoverInterface(domain_config_filename)
         
         self.team_size = self.interface.get_team_size()
         self.num_objs = self.interface.get_num_objs()
