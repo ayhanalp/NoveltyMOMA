@@ -5,10 +5,10 @@ import sys
 import datetime
 import shutil # for file management
 
-import NSGAII
-import KParentNSGAII
-import DMO
-import NSGAII_D
+import algorithms.NSGAII as NSGAII
+import algorithms.KParentNSGAII as KParentNSGAII
+import algorithms.DMO as DMO
+import algorithms.NSGAII_D as NSGAII_D
 
 if __name__ == '__main__':
     assert len(sys.argv) == 9, "Correct usage: python alg_name domain_name data_dirpath alg_config env_config seed label traj_write_freq"
@@ -17,7 +17,7 @@ if __name__ == '__main__':
     alg_name = sys.argv[1]
     assert alg_name in ['nsga2', 'kpnsga2', 'dmo', 'nsga2+d'], "Unrecognised alg_name"
     domain_name = sys.argv[2]
-    assert domain_name in ['rover', 'beach'], 'Uncrecognised domain_name'
+    assert domain_name in ['rover'], 'Uncrecognised domain_name'
     data_dir = sys.argv[3]
     data_dir = data_dir+'/' if data_dir[-1]!='/' else data_dir # Add a directory '/' at the end
     src_alg_config_filename = sys.argv[4]
