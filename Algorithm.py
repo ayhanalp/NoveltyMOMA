@@ -3,6 +3,7 @@ import pygmo as pg
 import random
 import torch
 import numpy
+import os
 
 import MORoverInterface
 import Policy
@@ -25,7 +26,7 @@ class CentralisedAlgorithm:
                                                                        'trajectory'],
                                                                        target_filename=self.data_filename)
 
-        self.interface = MORoverInterface.MORoverInterface(domain_config_filename)
+        self.interface = MORoverInterface.MORoverInterface(domain_config_filename, data_dir=os.path.dirname(data_filename))
         
         self.team_size = self.interface.get_team_size()
         self.num_objs = self.interface.get_num_objs()

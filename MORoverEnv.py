@@ -2,6 +2,8 @@ import yaml
 import copy
 import math
 import numpy as np
+import matplotlib.pyplot as plt
+import os
 
 class POI:
     def __init__(self, obj, location, radius, coupling, obs_window, reward, repeat):
@@ -94,11 +96,12 @@ class POI:
 
 
 class MORoverEnv:
-    def __init__(self, config_filename):
+    def __init__(self, config_filename, data_dir=None):
         if not isinstance(config_filename, str):
             raise ValueError('Rover configuration filename must be a string.')
 
         self.config_filename = config_filename
+        self.data_dir = data_dir
         self._read_config()  # Initial loading of the environment configuration
 
     def _read_config(self):
@@ -124,8 +127,10 @@ class MORoverEnv:
                 base_r = ring['radius']
                 jitter = ring.get('radius_jitter', 0.0)
 
+                base_theta = np.random.uniform(0, 2 * np.pi)
+
                 for i in range(num):
-                    theta = 2 * np.pi * i / num
+                    theta = base_theta + 2 * np.pi * i / num
                     r = base_r + np.random.uniform(-jitter, jitter)
 
                     loc = center + r * np.array([np.cos(theta), np.sin(theta)])
@@ -467,3 +472,44 @@ class MORoverEnv:
 
         else:
             raise ValueError(f"Unknown start_mode: {cfg['start_mode']}")
+        
+    def render_static(self, agent_locations, obs_radii, save_path=None):
+        dims = self.dimensions
+
+        fig, ax = plt.subplots(figsize=(7, 7))
+        ax.set_xlim(0, dims[0])
+        ax.set_ylim(0, dims[1])
+        ax.set_aspect("equal")
+        ax.set_title("Resolved MORover Environment")
+
+        ax.set_xticks(range(int(dims[0]) + 1))
+        ax.set_yticks(range(int(dims[1]) + 1))
+        ax.grid(alpha=0.3)
+
+        # --- POIs ---
+        for poi in self.pois:
+            x, y = poi.location
+            circ = plt.Circle((x, y), poi.radius, alpha=0.3)
+            ax.add_patch(circ)
+            ax.plot(x, y, "o", label=f"POI obj {poi.obj}")
+
+        # --- Agents ---
+        for i, (loc, r) in enumerate(zip(agent_locations, obs_radii)):
+            x, y = loc
+            ax.plot(x, y, "ks", label="Agent" if i == 0 else "")
+            circ = plt.Circle((x, y), r, linestyle="--", fill=False)
+            ax.add_patch(circ)
+
+        # Clean legend
+        handles, labels = ax.get_legend_handles_labels()
+        by_label = dict(zip(labels, handles))
+        ax.legend(by_label.values(), by_label.keys())
+
+        if save_path:
+            os.makedirs(os.path.dirname(save_path), exist_ok=True)
+            plt.savefig(save_path, dpi=200, bbox_inches="tight")
+        else:
+            plt.show()
+
+        plt.close()
+

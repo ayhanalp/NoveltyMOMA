@@ -1,17 +1,18 @@
 import yaml
 import torch
 import numpy as np
+import os
 
 from Policy import Policy
 from MORoverEnv import MORoverEnv
 
 class MORoverInterface():
-    def __init__(self, rover_config_filename):
+    def __init__(self, rover_config_filename, data_dir):
         """
         Initialise the MOROverInterface class with its instance of the MOROverEnv Domain.
         Setup an internal reference to the rover config file
         """
-        self.rover_env = MORoverEnv(rover_config_filename)
+        self.rover_env = MORoverEnv(rover_config_filename, data_dir=data_dir)
         with open(rover_config_filename, 'r') as config_file:
             self.config = yaml.safe_load(config_file)
     
@@ -38,6 +39,23 @@ class MORoverInterface():
         num_sensors = self.config['Agents']['num_sensors']
         observation_radii = self.config['Agents']['observation_radii']
         max_step_sizes = self.config['Agents']['max_step_sizes']
+        
+        # Render and save a static image of the environment only once
+        if not hasattr(self, "_env_visualized"):
+            if self.rover_env.data_dir is not None:
+                save_path = os.path.join(
+                    self.rover_env.data_dir,
+                    "env_instance.png"
+                )
+            else:
+                save_path = None
+                
+            self.rover_env.render_static(
+                agent_locations,
+                observation_radii,
+                save_path=save_path
+            )
+            self._env_visualized = True
         
         cumulative_global_reward = {}  # Initialize cumulative global reward
 

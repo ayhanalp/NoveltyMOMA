@@ -26,7 +26,8 @@ DATA_DIR="$REPO_ROOT/data"
 ALG_CONFIG="config/generic/generic_DMOConfig.yaml"
 ENV_CONFIG="config/generic/generic_MORoverEnvConfig.yaml"
 
-SEED=2024
+#SEED=2024
+SEED=$(date +%s)
 LABEL="test"
 TRAJ_WRITE_FREQ=50
 

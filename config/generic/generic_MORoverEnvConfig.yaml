@@ -1,0 +1,67 @@
+Meta:
+  num_objs: 2
+
+Environment:
+  dimensions: [20, 20]
+  ep_length: 25
+  timestep_penalty: 0
+
+  global_reward_mode: "Aggregated"
+  local_reward_mode: "exponential"
+  local_reward_kneecap: 10.0
+  local_reward_temp: 2
+
+  observation_mode: "density"
+  poi_obs_temp: 2
+  agent_obs_temp: 2
+  include_location_in_obs: False
+
+POI_Generation:
+  mode: "concentric_rings"   # ["fixed", "concentric_rings"]
+
+  center: [10, 10]
+
+  rings:
+    - obj: 0
+      num_pois: 2
+      radius: 4.0
+      radius_jitter: 0.5
+      poi_radius: 1.0
+      coupling: 2
+      reward: 1.5
+      obs_window: [0, 100]
+      repeat: True
+
+    - obj: 1
+      num_pois: 2
+      radius: 8.0
+      radius_jitter: 0.5
+      poi_radius: 1.0
+      coupling: 2
+      reward: 1.5
+      obs_window: [0, 100]
+      repeat: True
+
+Agents:
+  num_agents: 4
+  start_mode: random_circle   # or "random_circle"
+
+  # used only if start_mode == fixed
+  starting_locs:
+    - [2, 2]
+    - [2, 18]
+    - [18, 2]
+    - [18, 18]
+
+  # used only if start_mode == random_circle
+  start_center: [10, 10]
+  start_radius: 1.0
+  min_start_separation: 0.5
+
+  num_sensors: [4, 4, 4, 4]
+  observation_radii: [5, 5, 5, 5]
+  max_step_sizes: [1, 1, 1, 1]
+
+  num_sensors: [4, 4, 4, 4]
+  observation_radii: [5, 5, 5, 5]
+  max_step_sizes: [1, 1, 1, 1]
