@@ -12,6 +12,9 @@ import algorithms.KParentNSGAII as KParentNSGAII
 import algorithms.DMO as DMO
 import algorithms.NSGAII_D as NSGAII_D
 
+# Absolute path to the repo root (directory containing main.py)
+REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+
 if __name__ == '__main__':
     assert len(sys.argv) == 9, "Correct usage: python alg_name domain_name data_dirpath alg_config env_config seed label traj_write_freq"
    
@@ -21,9 +24,15 @@ if __name__ == '__main__':
     domain_name = sys.argv[2]
     assert domain_name in ['rover'], 'Uncrecognised domain_name'
     data_dir = sys.argv[3]
+    if not os.path.isabs(data_dir):
+        data_dir = os.path.join(REPO_ROOT, data_dir)
     data_dir = data_dir+'/' if data_dir[-1]!='/' else data_dir # Add a directory '/' at the end
     src_alg_config_filename = sys.argv[4]
+    if not os.path.isabs(src_alg_config_filename):
+        src_alg_config_filename = os.path.join(REPO_ROOT, src_alg_config_filename)
     src_env_config_filename = sys.argv[5]
+    if not os.path.isabs(src_env_config_filename):
+        src_env_config_filename = os.path.join(REPO_ROOT, src_env_config_filename)
     seed_val = int(sys.argv[6])
     seed_val_str = str(seed_val)
     label = sys.argv[7]
