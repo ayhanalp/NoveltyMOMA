@@ -153,7 +153,8 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
         # ---------------------------------------------------------
         # The Kozachenko-Leonenko estimator states H is proportional to mean(log(distance)).
         # We add a small epsilon to prevent log(0) if agents return to exact same pixel.
-        epsilon = 1e-12 
+        #epsilon = 1e-12
+        epsilon = 1 # Shift distance so that log values are not negative 
         log_dists = torch.log(knn_dists + epsilon)
         
         # Average over the episode
