@@ -22,7 +22,7 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
             trajectory, fitness_dict = self.interface.rollout(ind.joint_policy)
             # Compute the trajectory's entropy
             traj_entropy = self.compute_entropy(trajectory)
-            print("trajectory entropy: ", traj_entropy)
+            #print("trajectory entropy: ", traj_entropy)
             
             # Distribute entropy into fitness components
             weights = {0: 0.1, 1: 0.1}  # Entropy scaling factors for each objective

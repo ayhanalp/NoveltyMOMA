@@ -18,6 +18,33 @@ class MORoverInterface():
             self.config = yaml.safe_load(config_file)
         # Sample and store agent start locations once per experiment/run.
         self.rover_env.agents_start = self.rover_env.sample_agent_start_locations()
+        # Persist the environment instance (POIs + agent starts) immediately so it
+        # is available for post-processing on HPC without waiting for the first rollout.
+        if getattr(self.rover_env, 'data_dir', None) is not None:
+            try:
+                instance = {
+                    'dimensions': self.rover_env.dimensions,
+                    'ep_length': self.rover_env.ep_length,
+                    'agents_start': self.rover_env.agents_start,
+                    'pois': [
+                        {
+                            'obj': poi.obj,
+                            'location': poi.location,
+                            'radius': poi.radius,
+                            'coupling': poi.coupling,
+                            'obs_window': poi.obs_window,
+                            'reward': poi.reward,
+                            'repeat': poi.repeat,
+                        }
+                        for poi in self.rover_env.pois
+                    ],
+                }
+                os.makedirs(self.rover_env.data_dir, exist_ok=True)
+                with open(os.path.join(self.rover_env.data_dir, 'env_instance.yaml'), 'w') as ef:
+                    yaml.safe_dump(instance, ef)
+            except Exception:
+                # Non-fatal: do not interrupt initialization if writing fails
+                pass
     
     # to perform a key-wise sum of two dicts
     def _keywise_sum(self, dict1, dict2):
