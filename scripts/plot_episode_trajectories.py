@@ -63,19 +63,38 @@ def plot_environment(ax, env_instance, show_poi_radii=True):
     ax.set_aspect('equal')
     ax.grid(alpha=0.3)
 
-    # Draw POIs
+    # Draw POIs color-coded by objective
+    cmap = plt.get_cmap('tab10')
+    obj_to_color = {}
+    poi_handles = {}
     for poi in pois:
         loc = poi.get('location', [0, 0])
         r = poi.get('radius', 1.0)
-        circ = plt.Circle((loc[0], loc[1]), r, alpha=0.25, color='C1')
+        obj = int(poi.get('obj', 0))
+        if obj not in obj_to_color:
+            obj_to_color[obj] = cmap(obj % 10)
+        color = obj_to_color[obj]
+
+        circ = plt.Circle((loc[0], loc[1]), r, alpha=0.25, color=color, ec='k')
         ax.add_patch(circ)
-        ax.plot(loc[0], loc[1], 'o', color='C1')
-        ax.text(loc[0], loc[1], f"obj {poi.get('obj', 0)}", fontsize=8, color='C1')
+        h, = ax.plot(loc[0], loc[1], 'o', color=color)
+        ax.text(loc[0], loc[1], f"obj {obj}", fontsize=8, color=color)
+
+        # record a handle for the legend (one per objective)
+        if obj not in poi_handles:
+            poi_handles[obj] = h
 
     # Draw agent start locations
     for i, a in enumerate(agents_start):
         ax.plot(a[0], a[1], 'ks')
         ax.text(a[0], a[1], f"A{i}", fontsize=8, color='k')
+
+    # Add a legend entry for POI objectives
+    if poi_handles:
+        sorted_objs = sorted(poi_handles.keys())
+        handles = [poi_handles[o] for o in sorted_objs]
+        labels = [f"POI obj {o}" for o in sorted_objs]
+        ax.legend(handles=handles, labels=labels, fontsize=8, loc='upper right')
 
 
 def extract_positions_from_traj(trajectory):
