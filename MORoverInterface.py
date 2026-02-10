@@ -1,6 +1,7 @@
 import yaml
 import torch
 import numpy as np
+import copy
 import os
 
 from Policy import Policy
@@ -15,6 +16,8 @@ class MORoverInterface():
         self.rover_env = MORoverEnv(rover_config_filename, data_dir=data_dir)
         with open(rover_config_filename, 'r') as config_file:
             self.config = yaml.safe_load(config_file)
+        # Sample and store agent start locations once per experiment/run.
+        self.rover_env.agents_start = self.rover_env.sample_agent_start_locations()
     
     # to perform a key-wise sum of two dicts
     def _keywise_sum(self, dict1, dict2):
@@ -35,7 +38,13 @@ class MORoverInterface():
             raise ValueError("The supplied joint policy should be a list of Policy type objects")
 
         ep_length = self.rover_env.get_ep_length()
-        agent_locations = self.rover_env.sample_agent_start_locations()
+        # Use the pre-sampled agent start locations (sampled once at interface init).
+        # Make a deepcopy so rollouts can modify positions without mutating the stored starts.
+        if getattr(self.rover_env, 'agents_start', None) is not None:
+            agent_locations = copy.deepcopy(self.rover_env.agents_start)
+        else:
+            raise ValueError("Rover environment is missing pre-sampled agent start locations. Ensure that the environment is properly initialized and that sample_agent_start_locations() is called at least once.")
+        
         # Save the generated environment instance (POIs + agent starts) so plots can reproduce this run
         if self.rover_env.data_dir is not None:
             try:
