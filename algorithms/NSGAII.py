@@ -3,6 +3,7 @@ import torch
 import numpy as np
 import math
 import pygmo as pg
+import os
 
 import Algorithm
 
@@ -87,6 +88,41 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
         self.pop.extend(offspring_set)
 
         random.shuffle(self.pop) # NOTE: This is so that equally dominnat offpsrings in later indices don't just get thrown out
+
+        # Minimal checkpoint: save latest population state so experiments can be resumed.
+        try:
+            run_dir = self.interface.rover_env.data_dir
+            if run_dir is None and getattr(self, 'data_logger', None) and getattr(self.data_logger, 'target_filename', None):
+                run_dir = os.path.dirname(self.data_logger.target_filename)
+            if run_dir is not None:
+                ckpt = {
+                    'gen': gen,
+                    'glob_ind_counter': self.glob_ind_counter,
+                    'num_gens': self.num_gens,
+                    'pop_size': self.pop_size,
+                    'population': [],
+                    'traj_write_freq': traj_write_freq,
+                }
+                for ind in self.pop:
+                    ind_entry = {
+                        'id': ind.id,
+                        'fitness': ind.fitness,
+                        'raw_fitness': ind.raw_fitness,
+                        'policies': [p.state_dict() for p in ind.joint_policy]
+                    }
+                    ckpt['population'].append(ind_entry)
+
+                latest_path = os.path.join(run_dir, 'latest_checkpoint.pth')
+                tmp_path = latest_path + '.tmp'
+                torch.save(ckpt, tmp_path)
+                try:
+                    os.replace(tmp_path, latest_path)
+                except Exception:
+                    # best-effort move
+                    os.rename(tmp_path, latest_path)
+        except Exception:
+            # Don't interrupt evolution if checkpointing fails
+            pass
     
     def compute_entropy(self, trajectory):
         """
