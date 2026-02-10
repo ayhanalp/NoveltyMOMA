@@ -155,6 +155,17 @@ def plot_episode(csv_path, env_yaml_path, gen, rollout_id, output_dir='episode_p
     ax.legend(fontsize=8)
 
     plt.savefig(save_path, dpi=200, bbox_inches='tight')
+
+    # Also save into the experiment folder (same folder as the CSV) if available
+    try:
+        exp_dir = os.path.dirname(csv_path)
+        if exp_dir and os.path.isdir(exp_dir):
+            exp_save_path = os.path.join(exp_dir, os.path.basename(save_path))
+            plt.savefig(exp_save_path, dpi=200, bbox_inches='tight')
+    except Exception:
+        # Non-fatal if saving to experiment folder fails
+        pass
+
     if show:
         plt.show()
     else:
