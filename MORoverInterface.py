@@ -36,6 +36,32 @@ class MORoverInterface():
 
         ep_length = self.rover_env.get_ep_length()
         agent_locations = self.rover_env.sample_agent_start_locations()
+        # Save the generated environment instance (POIs + agent starts) so plots can reproduce this run
+        if self.rover_env.data_dir is not None:
+            try:
+                instance = {
+                    'dimensions': self.rover_env.dimensions,
+                    'ep_length': self.rover_env.ep_length,
+                    'agents_start': agent_locations,
+                    'pois': [
+                        {
+                            'obj': poi.obj,
+                            'location': poi.location,
+                            'radius': poi.radius,
+                            'coupling': poi.coupling,
+                            'obs_window': poi.obs_window,
+                            'reward': poi.reward,
+                            'repeat': poi.repeat,
+                        }
+                        for poi in self.rover_env.pois
+                    ],
+                }
+                os.makedirs(self.rover_env.data_dir, exist_ok=True)
+                with open(os.path.join(self.rover_env.data_dir, 'env_instance.yaml'), 'w') as ef:
+                    yaml.safe_dump(instance, ef)
+            except Exception:
+                # Do not fail a rollout if saving the instance fails; just continue
+                pass
         num_sensors = self.config['Agents']['num_sensors']
         observation_radii = self.config['Agents']['observation_radii']
         max_step_sizes = self.config['Agents']['max_step_sizes']
