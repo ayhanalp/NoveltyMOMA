@@ -28,7 +28,7 @@ ENV_CONFIG="config/generic/generic_MORoverEnvConfig.yaml"
 
 #SEED=2024
 SEED=$(date +%s)
-LABEL="test"
+LABEL="4ag_2poi_0p1b"
 TRAJ_WRITE_FREQ=50
 
 # -----------------------------
@@ -41,7 +41,7 @@ TRAJ_WRITE_FREQ=50
 # -----------------------------
 # Run experiment
 # -----------------------------
-python "$REPO_ROOT/main.py" \
+PYTHONUNBUFFERED=1 python "$REPO_ROOT/main.py" \
     "$ALG_NAME" \
     "$DOMAIN" \
     "$DATA_DIR" \
