@@ -174,12 +174,13 @@ class MORoverEnv:
 
     def reset(self):
         """Reset the environment to its initial configuration."""
-        # Reload the environment configuration
-        self._load_config()
-        # Reset each POI to its original state
+        # Restore fixed POI layout
+        self.pois = copy.deepcopy(self._initial_pois)
+
+        # Reset internal POI state
         for poi in self.pois:
             poi.reset()
-    
+        
     def get_global_rewards(self, rov_locations, timestep):
         """
         Calculate and return the net reward vector for a list of rover positions at a given timestep.
