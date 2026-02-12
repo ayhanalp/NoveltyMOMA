@@ -28,9 +28,9 @@ POI_Generation:
       radius_jitter: 0.5
       poi_radius: 1.0
       coupling: 2
-      reward: 1.5
+      reward: 0.5
       obs_window: [0, 100]
-      repeat: True
+      repeat: False
 
     - obj: 1
       num_pois: 2
@@ -38,9 +38,9 @@ POI_Generation:
       radius_jitter: 0.5
       poi_radius: 1.0
       coupling: 2
-      reward: 1.5
+      reward: 0.5
       obs_window: [0, 100]
-      repeat: True
+      repeat: False
 
 Agents:
   num_agents: 4
@@ -57,10 +57,6 @@ Agents:
   start_center: [10, 10]
   start_radius: 1.0
   min_start_separation: 0.5
-
-  num_sensors: [4, 4, 4, 4]
-  observation_radii: [5, 5, 5, 5]
-  max_step_sizes: [1, 1, 1, 1]
 
   num_sensors: [4, 4, 4, 4]
   observation_radii: [5, 5, 5, 5]
