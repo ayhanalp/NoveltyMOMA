@@ -7,11 +7,12 @@ import os
 
 import Algorithm
 
-ENTROPY = False
+ENTROPY = True
 
 class NSGAII(Algorithm.CentralisedAlgorithm):
-    def __init__(self, alg_config_filename, domain_name, rover_config_filename, data_filename):
+    def __init__(self, alg_config_filename, domain_name, rover_config_filename, data_filename, beta):
         super().__init__(alg_config_filename, domain_name, rover_config_filename, data_filename)
+        self.beta = beta
 
     def evolve(self, gen=0, traj_write_freq=100):
         """Evolve the population using NSGA-II."""
@@ -26,7 +27,7 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
             #print("trajectory entropy: ", traj_entropy)
             
             # Distribute entropy into fitness components
-            weights = {0: 0.1, 1: 0.1}  # Entropy scaling factors for each objective
+            weights = {0: self.beta, 1: self.beta}  # Entropy scaling factors for each objective
             raw_fitness_dict = fitness_dict.copy()
             if ENTROPY:
                 for f in fitness_dict:

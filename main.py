@@ -16,7 +16,7 @@ import algorithms.NSGAII_D as NSGAII_D
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 if __name__ == '__main__':
-    assert len(sys.argv) == 9, "Correct usage: python alg_name domain_name data_dirpath alg_config env_config seed label traj_write_freq"
+    assert len(sys.argv) == 10, "Correct usage: python alg_name domain_name data_dirpath alg_config env_config seed label traj_write_freq"
    
     # Process the command line args
     alg_name = sys.argv[1]
@@ -37,6 +37,7 @@ if __name__ == '__main__':
     seed_val_str = str(seed_val)
     label = sys.argv[7]
     traj_write_freq = int(sys.argv[8])
+    beta = float(sys.argv[9])
 
     # Datetime for file naming
     datetime_now_string = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -74,9 +75,11 @@ if __name__ == '__main__':
         f.write(f"label: {label}\n")
         f.write(f"run_number: {next_run_num}\n")
         f.write(f"traj_write_freq: {traj_write_freq}\n")
+        f.write(f"beta: {beta}\n")
         f.write(f"datetime: {datetime_now_string}\n")
         f.write(f"alg_config_source: {src_alg_config_filename}\n")
         f.write(f"env_config_source: {src_env_config_filename}\n")
+        f.write(f"beta: {beta}\n")
 
     # Save data filename
     data_filename = os.path.join(run_dir, 'savedata.csv')
@@ -97,7 +100,8 @@ if __name__ == '__main__':
         alg = NSGAII.NSGAII(alg_config_filename=dest_alg_config_filename,
                             domain_name=domain_name,
                             data_filename=data_filename,
-                            rover_config_filename=dest_env_config_filename)
+                            rover_config_filename=dest_env_config_filename,
+                            beta=beta)
     elif alg_name == 'kpnsga2':
         alg = KParentNSGAII.KParentNSGAII(alg_config_filename=dest_alg_config_filename,
                                           domain_name=domain_name,
