@@ -129,8 +129,12 @@ class MORoverEnv:
 
                 base_theta = np.random.uniform(0, 2 * np.pi)
 
+                angle_offset_deg = ring.get('angle_offset_deg', 0.0)
+                angle_offset = np.deg2rad(angle_offset_deg)
+
                 for i in range(num):
-                    theta = base_theta + 2 * np.pi * i / num
+                    theta = base_theta + 2 * np.pi * i / num + angle_offset
+
                     r = base_r + np.random.uniform(-jitter, jitter)
 
                     loc = center + r * np.array([np.cos(theta), np.sin(theta)])
