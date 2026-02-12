@@ -28,8 +28,9 @@ ENV_CONFIG="config/generic/generic_MORoverEnvConfig.yaml"
 
 #SEED=2024
 SEED=$(date +%s)
-LABEL="4ag_2poi_0p1b"
+#LABEL="4ag_2poi_0p1b"
 TRAJ_WRITE_FREQ=50
+BETA=0.1
 
 # -----------------------------
 # Sanity checks
@@ -48,5 +49,5 @@ PYTHONUNBUFFERED=1 python "$REPO_ROOT/main.py" \
     "$REPO_ROOT/$ALG_CONFIG" \
     "$REPO_ROOT/$ENV_CONFIG" \
     "$SEED" \
-    "$LABEL" \
-    "$TRAJ_WRITE_FREQ"
+    "$TRAJ_WRITE_FREQ" \
+    "$BETA"

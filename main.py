@@ -6,6 +6,7 @@ import datetime
 import shutil # for file management
 import os
 import re
+import yaml
 
 import algorithms.NSGAII as NSGAII
 import algorithms.KParentNSGAII as KParentNSGAII
@@ -16,7 +17,7 @@ import algorithms.NSGAII_D as NSGAII_D
 REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 if __name__ == '__main__':
-    assert len(sys.argv) == 10, "Correct usage: python alg_name domain_name data_dirpath alg_config env_config seed label traj_write_freq"
+    assert len(sys.argv) == 9, "Correct usage: python alg_name domain_name data_dirpath alg_config env_config seed label traj_write_freq"
    
     # Process the command line args
     alg_name = sys.argv[1]
@@ -35,15 +36,27 @@ if __name__ == '__main__':
         src_env_config_filename = os.path.join(REPO_ROOT, src_env_config_filename)
     seed_val = int(sys.argv[6])
     seed_val_str = str(seed_val)
-    label = sys.argv[7]
-    traj_write_freq = int(sys.argv[8])
-    beta = float(sys.argv[9])
+    #label = sys.argv[7]
+    traj_write_freq = int(sys.argv[7])
+    beta = float(sys.argv[8])
 
     # Datetime for file naming
     datetime_now_string = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
 
+    with open(src_env_config_filename, 'r') as f:
+        env_config = yaml.safe_load(f)
+
+    num_agents = env_config['Agents']['num_agents']
+
+    rings = env_config['POI_Generation']['rings']
+    num_pois = sum(ring['num_pois'] for ring in rings)
+
     # Sanitize label for filesystem safety
-    safe_label = label.replace(' ', '_').replace('/', '_')
+    beta_str = f"{beta:.3f}".rstrip('0').rstrip('.')  # clean format
+    beta_str = beta_str.replace('.', 'p')             # filesystem friendly
+
+    safe_label = f"A{num_agents}_P{num_pois}_B{beta_str}"
+
     
     # Find existing runs with the same label
     existing = [
@@ -65,6 +78,12 @@ if __name__ == '__main__':
     os.makedirs(run_dir, exist_ok=False)
     print(f"Data will be saved to directory: {run_dir}")
     
+    # Create copy of configs at save data location
+    dest_alg_config_filename = os.path.join(run_dir, 'algconfig.yaml')
+    shutil.copyfile(src_alg_config_filename, dest_alg_config_filename)
+    dest_env_config_filename = os.path.join(run_dir, 'envconfig.yaml')
+    shutil.copyfile(src_env_config_filename, dest_env_config_filename)
+    
     # Save the metadata
     metadata_path = os.path.join(run_dir, 'metadata.txt')
 
@@ -72,24 +91,17 @@ if __name__ == '__main__':
         f.write(f"algorithm: {alg_name}\n")
         f.write(f"domain: {domain_name}\n")
         f.write(f"seed: {seed_val}\n")
-        f.write(f"label: {label}\n")
+        f.write(f"label: {safe_label}\n")
         f.write(f"run_number: {next_run_num}\n")
         f.write(f"traj_write_freq: {traj_write_freq}\n")
         f.write(f"beta: {beta}\n")
         f.write(f"datetime: {datetime_now_string}\n")
         f.write(f"alg_config_source: {src_alg_config_filename}\n")
         f.write(f"env_config_source: {src_env_config_filename}\n")
-        f.write(f"beta: {beta}\n")
 
     # Save data filename
     data_filename = os.path.join(run_dir, 'savedata.csv')
     
-    # Create copy of configs at save data location
-    dest_alg_config_filename = os.path.join(run_dir, 'algconfig.yaml')
-    shutil.copyfile(src_alg_config_filename, dest_alg_config_filename)
-    dest_env_config_filename = os.path.join(run_dir, 'envconfig.yaml')
-    shutil.copyfile(src_env_config_filename, dest_env_config_filename)
-
     # Set the seed value for all libraries
     random.seed(seed_val)
     torch.manual_seed(seed_val)
