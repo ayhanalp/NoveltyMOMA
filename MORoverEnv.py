@@ -172,6 +172,33 @@ class MORoverEnv:
         self.pois = self._generate_pois()
         self._initial_pois = copy.deepcopy(self.pois)  # Save initial state for reset
 
+    def save_env_instance(self):
+        if self.data_dir is None:
+            return
+
+        os.makedirs(self.data_dir, exist_ok=True)
+
+        instance = {
+            'dimensions': self.dimensions,
+            'ep_length': self.ep_length,
+            'pois': [
+                {
+                    'obj': poi.obj,
+                    'location': poi.location,
+                    'radius': poi.radius,
+                    'coupling': poi.coupling,
+                    'obs_window': poi.obs_window,
+                    'reward': poi.reward,
+                    'repeat': poi.repeat,
+                }
+                for poi in self.pois
+            ],
+            'agents_start': getattr(self, 'agents_start', None)
+        }
+
+        with open(os.path.join(self.data_dir, 'env_instance.yaml'), 'w') as ef:
+            yaml.safe_dump(instance, ef)
+
     def reset(self):
         """Reset the environment to its initial configuration."""
         # Restore fixed POI layout
