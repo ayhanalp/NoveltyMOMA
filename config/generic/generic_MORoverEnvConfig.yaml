@@ -22,27 +22,52 @@ POI_Generation:
   center: [10, 10]
 
   rings:
+    # ---------- INNER RING ----------
     - obj: 0
       num_pois: 2
       radius: 4.0
-      radius_jitter: 0.5
+      radius_jitter: 0
       poi_radius: 1.0
       coupling: 2
       reward: 0.5
       obs_window: [0, 100]
-      repeat: False
-      angle_offset_deg: 0   # inner ring
+      repeat: True
+      angle_offset_deg: 0
+
+    - obj: 1
+      num_pois: 2
+      radius: 4.0
+      radius_jitter: 0
+      poi_radius: 1.0
+      coupling: 2
+      reward: 0.5
+      obs_window: [0, 100]
+      repeat: True
+      angle_offset_deg: 90
+
+
+    # ---------- OUTER RING ----------
+    - obj: 0
+      num_pois: 2
+      radius: 8.0
+      radius_jitter: 0
+      poi_radius: 1.0
+      coupling: 2
+      reward: 2.0
+      obs_window: [0, 100]
+      repeat: True
+      angle_offset_deg: 15
 
     - obj: 1
       num_pois: 2
       radius: 8.0
-      radius_jitter: 0.5
+      radius_jitter: 0
       poi_radius: 1.0
       coupling: 2
-      reward: 0.5
+      reward: 2.0
       obs_window: [0, 100]
-      repeat: False
-      angle_offset_deg: 8   # slight outer shift
+      repeat: True
+      angle_offset_deg: 105
 
 Agents:
   num_agents: 4
