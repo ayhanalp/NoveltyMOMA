@@ -122,12 +122,12 @@ class MORoverEnv:
             center = np.array(poi_cfg['center'], dtype=float)
             pois = []
 
+            base_theta = np.random.uniform(0, 2 * np.pi)
+            
             for ring in poi_cfg['rings']:
                 num = ring['num_pois']
                 base_r = ring['radius']
                 jitter = ring.get('radius_jitter', 0.0)
-
-                base_theta = np.random.uniform(0, 2 * np.pi)
 
                 angle_offset_deg = ring.get('angle_offset_deg', 0.0)
                 angle_offset = np.deg2rad(angle_offset_deg)
