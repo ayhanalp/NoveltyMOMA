@@ -31,8 +31,9 @@ ENV_CONFIG="config/generic/generic_MORoverEnvConfig.yaml"
 SEED=1
 #LABEL="4ag_2poi_0p1b"
 TRAJ_WRITE_FREQ=50
-BETA=0.0
+BETAS=(0.15 0.3 0.45)
 
+for BETA in "${BETAS[@]}"; do
 # -----------------------------
 # Sanity checks
 # -----------------------------
@@ -52,3 +53,5 @@ PYTHONUNBUFFERED=1 python "$REPO_ROOT/main.py" \
     "$SEED" \
     "$TRAJ_WRITE_FREQ" \
     "$BETA"
+
+done
