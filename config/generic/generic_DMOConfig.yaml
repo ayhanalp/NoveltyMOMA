@@ -6,5 +6,5 @@ Policy:
   bias_init_lim: 0.2
 
 Evolutionary:
-  pop_size: 100
-  num_gens: 30000
+  pop_size: 75
+  num_gens: 10000
