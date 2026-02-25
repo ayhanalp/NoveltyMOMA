@@ -15,13 +15,14 @@ from concurrent.futures import ProcessPoolExecutor
 DATA_ROOT = "data"
 
 experiments = {
-    "A4_P8_B0_1"         : ["A4_P8_B0_1"],
-    "A4_P8_B0p3_1"       : ["A4_P8_B0p3_1"],
-    "A4_P8_B0p5_1"       : ["A4_P8_B0p5_1"],
-    "A4_P8_B0p15_1"       : ["A4_P8_B0p15_1"],
+    "A2_P4_B0"         : ["A2_P4_B0_"],
+    "A2_P4_B0p1"       : ["A2_P4_B0p1"],
+    "A2_P4_B0p25"       : ["A2_P4_B0p25"],
+    "A2_P4_B0p5"       : ["A2_P4_B0p5"],
+    "A2_P4_B1"       : ["A2_P4_B1"],
 }
 
-hv_indicator = HV(ref_point=np.array([0,0]))
+hv_indicator = HV(ref_point=np.array([1,1]))
 
 # ----------------------------
 # 2. HV computation

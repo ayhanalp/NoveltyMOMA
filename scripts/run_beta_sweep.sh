@@ -28,12 +28,12 @@ ENV_CONFIG="config/generic/generic_MORoverEnvConfig.yaml"
 
 #SEED=2024
 #SEED=$(date +%s)
-SEED=1
+SEEDs=(1 2 3)
 #LABEL="4ag_2poi_0p1b"
 TRAJ_WRITE_FREQ=50
-BETAS=(0.15 0.3 0.45)
+BETAS=(0.0 0.1 0.25 0.5 1.0)
 
-for BETA in "${BETAS[@]}"; do
+
 # -----------------------------
 # Sanity checks
 # -----------------------------
@@ -44,14 +44,17 @@ for BETA in "${BETAS[@]}"; do
 # -----------------------------
 # Run experiment
 # -----------------------------
-PYTHONUNBUFFERED=1 python "$REPO_ROOT/main.py" \
-    "$ALG_NAME" \
-    "$DOMAIN" \
-    "$DATA_DIR" \
-    "$REPO_ROOT/$ALG_CONFIG" \
-    "$REPO_ROOT/$ENV_CONFIG" \
-    "$SEED" \
-    "$TRAJ_WRITE_FREQ" \
-    "$BETA"
-
+for SEED in "${SEEDs[@]}"; do
+    for BETA in "${BETAS[@]}"; do
+        echo "Running seed=$SEED beta=$BETA"
+        PYTHONUNBUFFERED=1 python "$REPO_ROOT/main.py" \
+            "$ALG_NAME" \
+            "$DOMAIN" \
+            "$DATA_DIR" \
+            "$REPO_ROOT/$ALG_CONFIG" \
+            "$REPO_ROOT/$ENV_CONFIG" \
+            "$SEED" \
+            "$TRAJ_WRITE_FREQ" \
+            "$BETA"
+    done
 done

@@ -62,6 +62,16 @@ def plot_environment(ax, env_instance, show_poi_radii=True):
     ax.set_ylim(0, dims[1])
     ax.set_aspect('equal')
     ax.grid(alpha=0.3)
+    
+    ax.add_patch(
+        plt.Rectangle(
+            (10 - 0.15, 7),  # small thickness
+            0.3,
+            13 - 7,
+            color='black',
+            zorder=5
+        )
+    )
 
     # Draw POIs color-coded by objective
     cmap = plt.get_cmap('tab10')

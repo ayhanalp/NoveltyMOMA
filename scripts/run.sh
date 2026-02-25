@@ -27,11 +27,10 @@ ALG_CONFIG="config/generic/generic_DMOConfig.yaml"
 ENV_CONFIG="config/generic/generic_MORoverEnvConfig.yaml"
 
 #SEED=2024
-#SEED=$(date +%s)
-SEED=1
+SEED=0
 #LABEL="4ag_2poi_0p1b"
 TRAJ_WRITE_FREQ=50
-BETA=0.0
+BETA=0.15
 
 # -----------------------------
 # Sanity checks
