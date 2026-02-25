@@ -30,56 +30,56 @@ POI_Generation:
   center: [10, 10]
 
   rings:
-    # ---------- INNER RING ----------
+    # ---------- LEFT ----------
     - obj: 0
-      num_pois: 2
-      radius: 2.0
+      num_pois: 1
+      radius: 5.22
       radius_jitter: 0
       poi_radius: 1.0
       coupling: 2
       reward: 1
       obs_window: [0, 100]
       repeat: True
-      angle_offset_deg: 0
+      angle_offset_deg: 163.3
 
     - obj: 1
-      num_pois: 2
-      radius: 2.0
+      num_pois: 1
+      radius: 5.22
       radius_jitter: 0
       poi_radius: 1.0
       coupling: 2
       reward: 1
       obs_window: [0, 100]
       repeat: True
-      angle_offset_deg: 90
+      angle_offset_deg: 196.7
 
 
-    # ---------- OUTER RING ----------
+    # ---------- RIGHT ----------
     - obj: 0
       num_pois: 1
-      radius: 9.5
+      radius: 7.159
       radius_jitter: 0
       poi_radius: 1.0
-      coupling: 3
-      reward: 3.0
+      coupling: 2
+      reward: 5
       obs_window: [0, 100]
       repeat: True
-      angle_offset_deg: 45
+      angle_offset_deg: 12.1
 
     - obj: 1
       num_pois: 1
-      radius: 9.5
+      radius: 7.159
       radius_jitter: 0
       poi_radius: 1.0
-      coupling: 3
-      reward: 3.0
+      coupling: 2
+      reward: 5
       obs_window: [0, 100]
       repeat: True
-      angle_offset_deg: 225
+      angle_offset_deg: 347.9
 
 Agents:
   num_agents: 4
-  start_mode: random_circle   # or "random_circle"
+  start_mode: fixed  # or "random_circle"
 
   # used only if start_mode == fixed
   starting_locs:

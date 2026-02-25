@@ -122,7 +122,8 @@ class MORoverEnv:
             center = np.array(poi_cfg['center'], dtype=float)
             pois = []
 
-            base_theta = np.random.uniform(0, 2 * np.pi)
+            #base_theta = np.random.uniform(0, 2 * np.pi)
+            base_theta = 0.0 # for reproducibility, we can set this to 0. The angle_offset_deg will allow us to still have some variation in the arrangement of the pois across different rings, while ensuring the same arrangement across different runs of the same config.
             
             for ring in poi_cfg['rings']:
                 num = ring['num_pois']
@@ -172,6 +173,9 @@ class MORoverEnv:
         self.agent_obs_temp = self.config_data['Environment']['agent_obs_temp'] # Temp for state info of the agents -> e^-x/temp
         self.include_location_in_obs = self.config_data['Environment']['include_location_in_obs']
 
+        # Initialize obstacles
+        self.obstacles = self.config_data['Environment'].get('obstacles', [])
+        
         # Initialize POIs and store initial configuration
         self.pois = self._generate_pois()
         self._initial_pois = copy.deepcopy(self.pois)  # Save initial state for reset
@@ -283,6 +287,34 @@ class MORoverEnv:
         
         return local_rewards
 
+    def _collides_with_wall(self, old_loc, new_loc):
+
+        for obs in self.obstacles:
+
+            if obs['type'] == 'vertical_segment':
+
+                wall_x = obs['x']
+                y_min  = obs['y_min']
+                y_max  = obs['y_max']
+
+                # Did agent cross the wall in x?
+                crossed = (
+                    (old_loc[0] < wall_x and new_loc[0] >= wall_x) or
+                    (old_loc[0] > wall_x and new_loc[0] <= wall_x)
+                )
+                if crossed:
+
+                    old_y = old_loc[1]
+                    new_y = new_loc[1]
+
+                    # interpolate y where crossing happens
+                    t = (wall_x - old_loc[0]) / (new_loc[0] - old_loc[0])
+                    y_cross = old_y + t * (new_y - old_y)
+
+                    if y_min <= y_cross <= y_max:
+                        return True
+
+        return False 
     
     def update_agent_locations(self, agent_locations, agent_deltas, max_step_sizes):
         """
@@ -322,6 +354,10 @@ class MORoverEnv:
                 updated_coord = coord + delta_i
                 updated_coord = max(0, min(updated_coord, max_dim))  # Enforce boundaries
                 new_location.append(updated_coord)
+                
+            if self._collides_with_wall(loc, new_location):
+                new_location = loc  # cancel movement
+                
 
             updated_locations.append(new_location)
 
@@ -524,7 +560,24 @@ class MORoverEnv:
             circ = plt.Circle((x, y), poi.radius, alpha=0.3)
             ax.add_patch(circ)
             ax.plot(x, y, "o", label=f"POI obj {poi.obj}")
+            
+        # --- Obstacles (Walls) ---
+        for obs in self.obstacles:
 
+            if obs['type'] == 'vertical_segment':
+
+                wall_x = obs['x']
+                y_min  = obs['y_min']
+                y_max  = obs['y_max']
+
+                ax.plot(
+                    [wall_x, wall_x],
+                    [y_min, y_max],
+                    linewidth=4,
+                    color='black',
+                    solid_capstyle='butt',
+                    label='Wall'
+                )
         # --- Agents ---
         for i, (loc, r) in enumerate(zip(agent_locations, obs_radii)):
             x, y = loc
