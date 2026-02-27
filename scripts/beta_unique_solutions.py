@@ -8,6 +8,7 @@ import re
 from collections import defaultdict
 import numpy as np
 import matplotlib.pyplot as plt
+from scipy.stats import ttest_ind
 
 
 def count_unique_raw_fitness(csv_path):
@@ -83,10 +84,48 @@ def main():
         means.append(mean)
         stds.append(std)
 
-        print(f"{beta} & {mean:.2f} \\\\")
+        rounded_mean = int(round(mean))
+
+        print(f"{beta} & {rounded_mean} \\\\")
 
     print("\\bottomrule")
     print("\\end{tabular}")
+    
+    # ==========================
+    # Statistical Significance vs B=0
+    # ==========================
+    print("\n=== WELCH T-TESTS vs B=0 ===\n")
+
+    if 0.0 not in beta_results:
+        print("B0 not found. Cannot perform statistical tests.")
+    else:
+        baseline = beta_results[0.0]
+
+        for beta in betas:
+            if beta == 0.0:
+                continue
+
+            comparison = beta_results[beta]
+
+            t_stat, p_val = ttest_ind(comparison, baseline, equal_var=False)
+
+            mean_diff = np.mean(comparison) - np.mean(baseline)
+
+            print(f"B{beta} vs B0")
+            print(f"  Mean Difference: {mean_diff:.2f}")
+            print(f"  t-statistic: {t_stat:.3f}")
+            print(f"  p-value: {p_val:.5f}")
+
+            if p_val < 0.001:
+                print("  Result: *** Highly Significant (p < 0.001)")
+            elif p_val < 0.01:
+                print("  Result: ** Significant (p < 0.01)")
+            elif p_val < 0.05:
+                print("  Result: * Significant (p < 0.05)")
+            else:
+                print("  Result: Not Significant")
+
+            print("")
 
     # ---- Plot ----
     plt.figure()
