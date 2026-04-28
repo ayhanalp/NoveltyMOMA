@@ -44,6 +44,7 @@ DATA_DIR="$REPO_ROOT/data"
 echo "Running beta=$BETA seed=$SEED"
 
 export PYTHONUNBUFFERED=1
+export PYTHONPATH="$REPO_ROOT"
 
 python "$REPO_ROOT/main.py" \
     "$ALG_NAME" \

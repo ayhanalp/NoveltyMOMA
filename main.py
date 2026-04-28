@@ -8,13 +8,16 @@ import os
 import re
 import yaml
 
+# Absolute path to the repo root (directory containing main.py)
+REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+
+# Add the repository root to the Python path
+sys.path.insert(0, REPO_ROOT)
+
 import algorithms.NSGAII as NSGAII
 import algorithms.KParentNSGAII as KParentNSGAII
 import algorithms.DMO as DMO
 import algorithms.NSGAII_D as NSGAII_D
-
-# Absolute path to the repo root (directory containing main.py)
-REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 if __name__ == '__main__':
     assert len(sys.argv) == 9, "Correct usage: python alg_name domain_name data_dirpath alg_config env_config seed label traj_write_freq"
