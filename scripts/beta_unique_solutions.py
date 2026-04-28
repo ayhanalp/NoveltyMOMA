@@ -36,10 +36,24 @@ def parse_beta(folder_name):
         return float(beta_str)
 
 
+def parse_seed(folder_name):
+    match = re.search(r'_(\d+)$', folder_name)
+    if not match:
+        raise ValueError(f"Could not parse seed from {folder_name}")
+    return int(match.group(1))
+
 def main():
 
     repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     data_path = os.path.join(repo_root, "data")
+    
+    # ==========================
+    # Specify seeds to include
+    # ==========================
+    # Use None for ALL seeds
+    # Example: {1,2,3}
+    allowed_seeds = {1,2,3,4,5,7,8,9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20}
+    # allowed_seeds = None
 
     run_dirs = glob.glob(os.path.join(data_path, "A2_P4_B*_*"))
 
@@ -56,12 +70,19 @@ def main():
             continue
 
         try:
-            beta = parse_beta(os.path.basename(run_dir))
+            folder = os.path.basename(run_dir)
+
+            beta = parse_beta(folder)
+            seed = parse_seed(folder)
+
+            if allowed_seeds is not None and seed not in allowed_seeds:
+                continue
+
             count = count_unique_raw_fitness(csv_path)
 
             beta_results[beta].append(count)
 
-            print(f"{os.path.basename(run_dir)} --> {count}")
+            print(f"{folder} --> Seed {seed} --> {count}")
 
         except Exception as e:
             print(f"{run_dir} --> FAILED ({e})")

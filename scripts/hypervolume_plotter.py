@@ -13,17 +13,18 @@ from concurrent.futures import ProcessPoolExecutor
 # 1. Specify experiments here
 # ----------------------------
 DATA_ROOT = "data"
+#SEEDS = {1, 2, 3, 4, 5, 6, 7}   # or "all"
+SEEDS = "1 2 3 4 5 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 "
 
 experiments = {
-    "A2_P4_B0"         : ["A2_P4_B0_"],
-    "A2_P4_B0p1"       : ["A2_P4_B0p1"],
-    "A2_P4_B0p25"       : ["A2_P4_B0p25"],
-    "A2_P4_B0p5"       : ["A2_P4_B0p5"],
-    "A2_P4_B1"       : ["A2_P4_B1"],
+    "no entropy"        : ["A2_P4_B0_"],
+    "beta = 0.05"       : ["A2_P4_B0p05_"],
 }
 
-hv_indicator = HV(ref_point=np.array([1,1]))
 
+#     "beta = 0.3"        : ["A2_P4_B0p3_"]
+#hv_indicator = HV(ref_point=np.array([1,1]))
+hv_indicator = HV(ref_point=np.array([0,0]))
 # ----------------------------
 # 2. HV computation
 # ----------------------------
@@ -54,7 +55,16 @@ def main():
 
         files = []
         for p in prefixes:
-            files += glob(f"{DATA_ROOT}/{p}*/savedata.csv")
+            # if plotting all seeds
+            if SEEDS == "all":
+                pattern = f"{DATA_ROOT}/{p}*/savedata.csv"
+                files += glob(pattern)
+
+            # if plotting specific seeds
+            else:
+                for s in SEEDS:
+                    pattern = f"{DATA_ROOT}/{p}{s}/savedata.csv"
+                    files += glob(pattern)
 
         hv_per_gen = {}
 

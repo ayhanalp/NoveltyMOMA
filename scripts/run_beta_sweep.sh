@@ -28,11 +28,10 @@ ENV_CONFIG="config/generic/generic_MORoverEnvConfig.yaml"
 
 #SEED=2024
 #SEED=$(date +%s)
-SEEDs=(1 2 3)
-#LABEL="4ag_2poi_0p1b"
+#SEEDs=(1 2 3 4 5 7 8 9)
+SEEDs=({10..30})
 TRAJ_WRITE_FREQ=50
-BETAS=(0.0 0.1 0.25 0.5 1.0)
-
+BETAS=(0.0 0.05)
 
 # -----------------------------
 # Sanity checks
