@@ -31,20 +31,23 @@ module load anaconda
 eval "$(conda shell.bash hook)"
 conda activate env
 
+# Get the repository root directory
+REPO_ROOT=$(pwd)
+
 ALG_NAME="nsga2"
 DOMAIN="rover"
-ALG_CONFIG="config/generic/generic_DMOConfig.yaml"
-ENV_CONFIG="config/generic/generic_MORoverEnvConfig.yaml"
+ALG_CONFIG="$REPO_ROOT/config/generic/generic_DMOConfig.yaml"
+ENV_CONFIG="$REPO_ROOT/config/generic/generic_MORoverEnvConfig.yaml"
 TRAJ_WRITE_FREQ=500
 
-RUN_DIR="data/b${BETA}_s${SEED}"
+RUN_DIR="$REPO_ROOT/data/b${BETA}_s${SEED}"
 mkdir -p "$RUN_DIR"
 
 echo "Running beta=$BETA seed=$SEED"
 
 export PYTHONUNBUFFERED=1
 
-python main.py \
+python "$REPO_ROOT/main.py" \
     "$ALG_NAME" \
     "$DOMAIN" \
     "$RUN_DIR" \
