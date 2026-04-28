@@ -39,9 +39,7 @@ DOMAIN="rover"
 ALG_CONFIG="$REPO_ROOT/config/generic/generic_DMOConfig.yaml"
 ENV_CONFIG="$REPO_ROOT/config/generic/generic_MORoverEnvConfig.yaml"
 TRAJ_WRITE_FREQ=500
-
-RUN_DIR="$REPO_ROOT/data/b${BETA}_s${SEED}"
-mkdir -p "$RUN_DIR"
+DATA_DIR="$REPO_ROOT/data"
 
 echo "Running beta=$BETA seed=$SEED"
 
@@ -50,7 +48,7 @@ export PYTHONUNBUFFERED=1
 python "$REPO_ROOT/main.py" \
     "$ALG_NAME" \
     "$DOMAIN" \
-    "$RUN_DIR" \
+    "$DATA_DIR" \
     "$ALG_CONFIG" \
     "$ENV_CONFIG" \
     "$SEED" \
