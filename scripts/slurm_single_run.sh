@@ -9,7 +9,7 @@ sbatch \
   --constraint=skylake \
   --output=./logs/${LABEL}_${BETA}_${SEED}.out \
   --error=./logs/${LABEL}_${BETA}_${SEED}.err \
-  --export=ALL,BETA=${BETA},SEED=${SEED} \
+  --export=ALL,BETA=${BETA},SEED=${SEED},LABEL=${LABEL} \
   -c 1 \
   --mem=12G \
   --time=36:00:00 \
@@ -28,12 +28,15 @@ cd /nfs/stak/users/santjami/hpc-share/repos/NoveltyMOMA/
 module load anaconda
 #source $(conda info --base)/etc/profile.d/conda.sh
 #conda activate env
-eval "$(conda shell.bash hook)"
+#eval "$(conda shell.bash hook)"
+source $(conda info --base)/etc/profile.d/conda.sh
 conda activate env
+
+# Get the repository root directory
+REPO_ROOT=$(pwd)
 
 # Make sure logs directory exists
 mkdir -p "$REPO_ROOT/logs"
-
 DEBUG_FILE="$REPO_ROOT/logs/debug_${SLURM_JOBID}.txt"
 
 {
@@ -48,9 +51,6 @@ DEBUG_FILE="$REPO_ROOT/logs/debug_${SLURM_JOBID}.txt"
   python -c "import numpy, torch; print('numpy:', numpy.__version__); print('torch:', torch.__version__)"
   echo "---------------------"
 } >> "$DEBUG_FILE" 2>&1
-
-# Get the repository root directory
-REPO_ROOT=$(pwd)
 
 ALG_NAME="nsga2"
 DOMAIN="rover"
