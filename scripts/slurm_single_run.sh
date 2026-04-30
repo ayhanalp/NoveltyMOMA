@@ -31,6 +31,7 @@ module load anaconda
 #eval "$(conda shell.bash hook)"
 source $(conda info --base)/etc/profile.d/conda.sh
 conda activate env
+export PATH="$CONDA_PREFIX/bin:$PATH"
 
 # Get the repository root directory
 REPO_ROOT=$(pwd)
@@ -46,7 +47,7 @@ DEBUG_FILE="$REPO_ROOT/logs/debug_${SLURM_JOBID}.txt"
   echo "which python: $(which python)"
   echo "python version: $(python -V)"
   echo "CONDA_PREFIX: $CONDA_PREFIX"
-  echo "PYTHONPATH: $PYTHONPATH"
+  echo "PYTHONPATH: ${PYTHONPATH:-<not set>}"
   conda info --envs
   python -c "import numpy, torch; print('numpy:', numpy.__version__); print('torch:', torch.__version__)"
   echo "---------------------"
