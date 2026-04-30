@@ -9,7 +9,7 @@ sbatch \
   --constraint=skylake \
   --output=./logs/${LABEL}_${BETA}_${SEED}.out \
   --error=./logs/${LABEL}_${BETA}_${SEED}.err \
-  --export=ALL,BETA=${BETA},SEED=${SEED},LABEL=${LABEL} \
+  --export=BETA=${BETA},SEED=${SEED},LABEL=${LABEL} \
   -c 1 \
   --mem=12G \
   --time=36:00:00 \
