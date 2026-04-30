@@ -31,6 +31,24 @@ module load anaconda
 eval "$(conda shell.bash hook)"
 conda activate env
 
+# Make sure logs directory exists
+mkdir -p "$REPO_ROOT/logs"
+
+DEBUG_FILE="$REPO_ROOT/logs/debug_${SLURM_JOBID}.txt"
+
+{
+  echo "---- CONDA DEBUG ----"
+  date
+  hostname
+  echo "which python: $(which python)"
+  echo "python version: $(python -V)"
+  echo "CONDA_PREFIX: $CONDA_PREFIX"
+  echo "PYTHONPATH: $PYTHONPATH"
+  conda info --envs
+  python -c "import numpy, torch; print('numpy:', numpy.__version__); print('torch:', torch.__version__)"
+  echo "---------------------"
+} >> "$DEBUG_FILE" 2>&1
+
 # Get the repository root directory
 REPO_ROOT=$(pwd)
 
