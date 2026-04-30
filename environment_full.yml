@@ -242,4 +242,3 @@ dependencies:
       - sympy==1.14.0
       - torch==2.9.1
       - triton==3.5.1
-prefix: /home/santjami/miniconda/envs/env
