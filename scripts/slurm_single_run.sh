@@ -45,6 +45,14 @@ echo "Running beta=$BETA seed=$SEED"
 
 export PYTHONUNBUFFERED=1
 export PYTHONPATH="$REPO_ROOT"
+# Force single-threaded behaviour for numerical libraries to reduce nondeterminism
+export OMP_NUM_THREADS=1
+export OPENBLAS_NUM_THREADS=1
+export MKL_NUM_THREADS=1
+export NUMEXPR_NUM_THREADS=1
+export VECLIB_MAXIMUM_THREADS=1
+# Fix Python hash seed so hashed iteration orders are reproducible
+export PYTHONHASHSEED=${SEED}
 
 python "$REPO_ROOT/main.py" \
     "$ALG_NAME" \
