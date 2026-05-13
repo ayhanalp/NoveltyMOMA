@@ -20,28 +20,34 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
         for ind in self.pop:
             # Reset the fitness
             ind.reset_fitness()
-            # Conduct rollout
-            trajectory, fitness_dict = self.interface.rollout(ind.joint_policy)
+            # Conduct rollout with halfway reward tracking
+            trajectory, fitness_dict, reward_at_halfway = self.interface.rollout(ind.joint_policy, return_halfway_reward=True)
             # Compute the trajectory's entropy
             traj_entropy = self.compute_entropy(trajectory)
             #print("trajectory entropy: ", traj_entropy)
             
-            # Distribute entropy into fitness components
+            # Transform fitness: [reward_at_halfway + beta*entropy, reward_at_full + beta*entropy]
             weights = {0: self.beta, 1: self.beta}  # Entropy scaling factors for each objective
-            raw_fitness_dict = fitness_dict.copy()
-            if ENTROPY:
-                for f in fitness_dict:
-                    fitness_dict[f] += weights[f] * traj_entropy
             
-            #fitness_dict = fitness_dict + beta * traj_entropy
+            # Store raw fitness values (before entropy shaping)
+            raw_fitness_dict = {
+                0: reward_at_halfway.get(0, 0),  # First objective: reward at halfway
+                1: fitness_dict.get(0, 0)  # Second objective: reward at full episode
+            }
+            
+            # Apply entropy shaping
+            shaped_fitness_dict = {
+                0: reward_at_halfway.get(0, 0) + weights[0] * traj_entropy,
+                1: fitness_dict.get(0, 0) + weights[1] * traj_entropy
+            }
 
-            if len(fitness_dict) != self.num_objs:
-                raise ValueError(f"[NSGA-II] Expected {self.num_objs} objectives, but got {len(fitness_dict)}.")
+            if len(shaped_fitness_dict) != self.num_objs:
+                raise ValueError(f"[NSGA-II] Expected {self.num_objs} objectives, but got {len(shaped_fitness_dict)}.")
             # Store the rollout trajectory
             ind.trajectory = trajectory
             # Store fitness
-            for f in fitness_dict:
-                ind.fitness[f] = -fitness_dict[f] # NOTE: The fitness sign is flipped to match Pygmo convention
+            for f in shaped_fitness_dict:
+                ind.fitness[f] = -shaped_fitness_dict[f] # NOTE: The fitness sign is flipped to match Pygmo convention
                 ind.raw_fitness[f] = -raw_fitness_dict[f]  # unshaped, for evaluation
 
             # Add this individual's data to the logger

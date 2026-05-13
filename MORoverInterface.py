@@ -25,21 +25,25 @@ class MORoverInterface():
     def _keywise_sum(self, dict1, dict2):
         return {key: dict1.get(key, 0) + dict2.get(key, 0) for key in set(dict1) | set(dict2)}
 
-    def rollout(self, joint_policy: list):
+    def rollout(self, joint_policy: list, return_halfway_reward=False):
         """
         Perform a rollout of a given multiheaded actor in the MORoverEnv domain.
 
         Parameters:
         - joint_policy: list of policies, representing the whole team
+        - return_halfway_reward (bool): If True, return cumulative reward at halfway point
 
         Returns:
         - rollout_trajectory (dict): Complete trajectory of the rollout with position, and action data of each agent.
         - global_reward (list): Reward vector that evaluates this joint_policy on each system-level objective.
+        - reward_at_halfway (dict, optional): Cumulative reward up to halfway through episode (only if return_halfway_reward=True).
         """
         if not (isinstance(joint_policy, list) and isinstance(p, Policy) for p in joint_policy):
             raise ValueError("The supplied joint policy should be a list of Policy type objects")
 
         ep_length = self.rover_env.get_ep_length()
+        halfway_length = ep_length // 2  # Calculate halfway point
+        
         # Use the pre-sampled agent start locations (sampled once at interface init).
         # Make a deepcopy so rollouts can modify positions without mutating the stored starts.
         if getattr(self.rover_env, 'agents_start', None) is not None:
@@ -69,6 +73,7 @@ class MORoverInterface():
             self._env_visualized = True
         
         cumulative_global_reward = {}  # Initialize cumulative global reward
+        reward_at_halfway = {}  # Initialize reward at halfway point
 
         rollout_trajectory = [[] for _ in range(len(joint_policy))] # List of list of dicts
 
@@ -121,8 +126,15 @@ class MORoverInterface():
             # Get the global reward and update the cumulative global reward
             global_reward = self.rover_env.get_global_rewards(rov_locations=agent_locations, timestep=t)
             cumulative_global_reward = self._keywise_sum(cumulative_global_reward, global_reward)
+            
+            # Capture reward at halfway point
+            if t == halfway_length - 1:
+                reward_at_halfway = copy.deepcopy(cumulative_global_reward)
 
-        return rollout_trajectory, cumulative_global_reward
+        if return_halfway_reward:
+            return rollout_trajectory, cumulative_global_reward, reward_at_halfway
+        else:
+            return rollout_trajectory, cumulative_global_reward
 
     # Function that evaluates a given trajectory for global rewards (without rollout)
     def evaluate_trajectory(self, traj: dict):
