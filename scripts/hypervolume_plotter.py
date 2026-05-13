@@ -14,11 +14,13 @@ from concurrent.futures import ProcessPoolExecutor
 # ----------------------------
 DATA_ROOT = "data"
 #SEEDS = {1, 2, 3, 4, 5, 6, 7}   # or "all"
-SEEDS = "1 2 3 4 5 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 "
+#SEEDS = "1 2 3 4 5 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 "
+SEEDS = {1, 2, 3, 4, 5}
 
 experiments = {
-    "no entropy"        : ["A2_P4_B0_"],
-    "beta = 0.05"       : ["A2_P4_B0p05_"],
+    "no entropy"        : ["A2_P12_B0_"],
+    "beta = 0.05"       : ["A2_P12_B0p05_"],
+    "beta = 0.1"       : ["A2_P12_B0p1_"],
 }
 
 
