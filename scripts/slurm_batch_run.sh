@@ -4,25 +4,48 @@ SCRIPT_DIR="$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 # Experiment setup for time-objectives with entropy shaping
 # Using short label to fit SLURM's 15-char job name limit
 BASE_LABEL="time_obj"
-BETA_VALUES=(0.0 0.5 1.0 1.5 2.0)
-NUM_SEEDS=5
 
-# Run beta sweep with multiple seeds
+# Desired sweep:
+# - betas 0.0, 0.5, 1.0 for seeds 6-10 (inclusive)
+# - betas 0.05, 0.1 for seeds 1-10 (inclusive)
+BETAS_HIGH=(0.0 0.5 1.0)
+SEEDS_HIGH_START=6
+SEEDS_HIGH_END=10
+
+BETAS_LOW=(0.05 0.1)
+SEEDS_LOW_START=1
+SEEDS_LOW_END=10
+
+# Precompute expected job count for messaging
+COUNT_HIGH=$(( (${SEEDS_HIGH_END} - ${SEEDS_HIGH_START} + 1) * ${#BETAS_HIGH[@]} ))
+COUNT_LOW=$(( (${SEEDS_LOW_END} - ${SEEDS_LOW_START} + 1) * ${#BETAS_LOW[@]} ))
+TOTAL_JOBS=$((COUNT_HIGH + COUNT_LOW))
+
+# Submit jobs
 JOB_NUM=1
-for BETA in "${BETA_VALUES[@]}"; do
-    for SEED in $(seq 1 $NUM_SEEDS); do
-        # Create unique but concise label: "time_obj_B0_S1", "time_obj_B0p5_S1", etc.
-        BETA_SHORT=$(printf "%.2f" $BETA | sed 's/\./p/')  # Convert 0.5 -> 0p5
+
+for BETA in "${BETAS_LOW[@]}"; do
+    for SEED in $(seq ${SEEDS_LOW_START} ${SEEDS_LOW_END}); do
+        BETA_SHORT=$(printf "%.2f" $BETA | sed 's/\./p/')
         LABEL="${BASE_LABEL}_B${BETA_SHORT}_S${SEED}"
-        
-        echo "[$JOB_NUM/25] Submitting: $LABEL (BETA=$BETA, SEED=$SEED)"
+        echo "[$JOB_NUM/${TOTAL_JOBS}] Submitting: $LABEL (BETA=$BETA, SEED=$SEED)"
         bash "$SCRIPT_DIR/slurm_single_run.sh" "$LABEL" "$BETA" "$SEED"
-        # Small delay to avoid overwhelming the job scheduler
+        sleep 1
+        ((JOB_NUM++))
+    done
+done
+
+for BETA in "${BETAS_HIGH[@]}"; do
+    for SEED in $(seq ${SEEDS_HIGH_START} ${SEEDS_HIGH_END}); do
+        BETA_SHORT=$(printf "%.2f" $BETA | sed 's/\./p/')
+        LABEL="${BASE_LABEL}_B${BETA_SHORT}_S${SEED}"
+        echo "[$JOB_NUM/${TOTAL_JOBS}] Submitting: $LABEL (BETA=$BETA, SEED=$SEED)"
+        bash "$SCRIPT_DIR/slurm_single_run.sh" "$LABEL" "$BETA" "$SEED"
         sleep 1
         ((JOB_NUM++))
     done
 done
 
 echo ""
-echo "✓ Submitted all 25 jobs for beta sweep: ${BETA_VALUES[*]}"
+echo "✓ Submitted all ${TOTAL_JOBS} jobs for beta sweep"
 echo "Monitor with: squ"
