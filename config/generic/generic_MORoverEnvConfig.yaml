@@ -29,7 +29,7 @@ POI_Generation:
     # Easy local reward
     - obj: 0
 
-      num_pois: 6
+      num_pois: 4
       radius: 4
       radius_jitter: 1.5
       poi_radius: 1.0

@@ -9,7 +9,7 @@ BASE_LABEL="time_obj"
 # - betas 0.0, 0.5, 1.0 for seeds 6-10 (inclusive)
 # - betas 0.05, 0.1 for seeds 1-10 (inclusive)
 BETAS_HIGH=(0.0 0.5 1.0)
-SEEDS_HIGH_START=6
+SEEDS_HIGH_START=1
 SEEDS_HIGH_END=10
 
 BETAS_LOW=(0.05 0.1)

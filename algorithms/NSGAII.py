@@ -26,19 +26,24 @@ class NSGAII(Algorithm.CentralisedAlgorithm):
             traj_entropy = self.compute_entropy(trajectory)
             #print("trajectory entropy: ", traj_entropy)
             
-            # Transform fitness: [reward_at_halfway + beta*entropy, reward_at_full + beta*entropy]
+            # Transform fitness to interval rewards: [R(0-T/2), R(T/2,T)]
+            # where R(T/2,T) = total_reward - reward_at_halfway
             weights = {0: self.beta, 1: self.beta}  # Entropy scaling factors for each objective
-            
+
+            first_half = reward_at_halfway.get(0, 0)
+            total = fitness_dict.get(0, 0)
+            second_half = total - first_half
+
             # Store raw fitness values (before entropy shaping)
             raw_fitness_dict = {
-                0: reward_at_halfway.get(0, 0),  # First objective: reward at halfway
-                1: fitness_dict.get(0, 0)  # Second objective: reward at full episode
+                0: first_half,
+                1: second_half
             }
-            
-            # Apply entropy shaping
+
+            # Apply entropy shaping as a bonus (unchanged but applied to the interval rewards)
             shaped_fitness_dict = {
-                0: reward_at_halfway.get(0, 0) + weights[0] * traj_entropy,
-                1: fitness_dict.get(0, 0) + weights[1] * traj_entropy
+                0: first_half + weights[0] * traj_entropy,
+                1: second_half + weights[1] * traj_entropy
             }
 
             if len(shaped_fitness_dict) != self.num_objs:
