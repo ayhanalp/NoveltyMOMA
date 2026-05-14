@@ -29,9 +29,15 @@ ENV_CONFIG="config/generic/generic_MORoverEnvConfig.yaml"
 #SEED=2024
 #SEED=$(date +%s)
 #SEEDs=(1 2 3 4 5 7 8 9)
-SEEDs=(1 2 3 4 5)
 TRAJ_WRITE_FREQ=50
-BETAS=(0.0 0.1 0.5 1.0 1.5 2.0)
+
+# We want:
+# - betas 0.0, 0.5, 1.0 for seeds 6-10
+# - betas 0.05, 0.1 for seeds 1-10
+SEEDS_LOW=(1 2 3 4 5 6 7 8 9 10)
+SEEDS_HIGH=(6 7 8 9 10)
+BETAS_LOW=(0.05 0.1)
+BETAS_HIGH=(0.0 0.5 1.0)
 
 # -----------------------------
 # Sanity checks
@@ -43,8 +49,25 @@ BETAS=(0.0 0.1 0.5 1.0 1.5 2.0)
 # -----------------------------
 # Run experiment
 # -----------------------------
-for SEED in "${SEEDs[@]}"; do
-    for BETA in "${BETAS[@]}"; do
+## Run low betas (0.05, 0.1) for seeds 1-10
+for SEED in "${SEEDS_LOW[@]}"; do
+    for BETA in "${BETAS_LOW[@]}"; do
+        echo "Running seed=$SEED beta=$BETA"
+        PYTHONUNBUFFERED=1 python "$REPO_ROOT/main.py" \
+            "$ALG_NAME" \
+            "$DOMAIN" \
+            "$DATA_DIR" \
+            "$REPO_ROOT/$ALG_CONFIG" \
+            "$REPO_ROOT/$ENV_CONFIG" \
+            "$SEED" \
+            "$TRAJ_WRITE_FREQ" \
+            "$BETA"
+    done
+done
+
+## Run high betas (0.0, 0.5, 1.0) for seeds 6-10
+for SEED in "${SEEDS_HIGH[@]}"; do
+    for BETA in "${BETAS_HIGH[@]}"; do
         echo "Running seed=$SEED beta=$BETA"
         PYTHONUNBUFFERED=1 python "$REPO_ROOT/main.py" \
             "$ALG_NAME" \
