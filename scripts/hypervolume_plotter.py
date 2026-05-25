@@ -12,20 +12,18 @@ from concurrent.futures import ProcessPoolExecutor
 # ----------------------------
 # 1. Specify experiments here
 # ----------------------------
-DATA_ROOT = "data"
+DATA_ROOT = "data/hpc_time_obj1_full/time_obj_1"
+#DATA_ROOT = "data/wall_objectives"
 #SEEDS = {1, 2, 3, 4, 5, 6, 7}   # or "all"
-#SEEDS = "1 2 3 4 5 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 "
-SEEDS = {1, 2, 3, 4, 5}
-
+SEEDS = {1,2,3,4,5,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31}
+SEEDS = {3, 4, 6, 9} #beta = 0.05
+#SEEDS = {1, 5, 8, 10}
+#SEEDS = "all"
 experiments = {
     "no entropy"        : ["A2_P12_B0_"],
     "beta = 0.05"       : ["A2_P12_B0p05_"],
-    "beta = 0.1"       : ["A2_P12_B0p1_"],
 }
 
-
-#     "beta = 0.3"        : ["A2_P4_B0p3_"]
-#hv_indicator = HV(ref_point=np.array([1,1]))
 hv_indicator = HV(ref_point=np.array([0,0]))
 # ----------------------------
 # 2. HV computation
@@ -80,6 +78,15 @@ def main():
         gens = sorted(hv_per_gen.keys())
         mean = np.array([np.mean(hv_per_gen[g]) for g in gens])
         err  = np.array([sem(hv_per_gen[g])  for g in gens])
+        
+        # Print final generation statistics
+        final_gen = gens[-1]
+
+        print(
+            f"{label}: "
+            f"final HV = {mean[-1]:.4f} ± {err[-1]:.4f} "
+            f"(SE), n={len(hv_per_gen[final_gen])}"
+        )
 
         c = colors[i%len(colors)]
         plt.plot(gens,mean,label=label)

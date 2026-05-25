@@ -63,15 +63,15 @@ def plot_environment(ax, env_instance, show_poi_radii=True):
     ax.set_aspect('equal')
     ax.grid(alpha=0.3)
     
-    ax.add_patch(
-        plt.Rectangle(
-            (10 - 0.15, 7),  # small thickness
-            0.3,
-            13 - 7,
-            color='black',
-            zorder=5
-        )
-    )
+    #ax.add_patch(
+    #    plt.Rectangle(
+    #        (10 - 0.15, 7),  # small thickness
+    #        0.3,
+    #        13 - 7,
+    #        color='black',
+    #        zorder=5
+    #    )
+    #)
 
     # Draw POIs color-coded by objective
     cmap = plt.get_cmap('tab10')
@@ -88,7 +88,7 @@ def plot_environment(ax, env_instance, show_poi_radii=True):
         circ = plt.Circle((loc[0], loc[1]), r, alpha=0.25, color=color, ec='k')
         ax.add_patch(circ)
         h, = ax.plot(loc[0], loc[1], 'o', color=color)
-        ax.text(loc[0], loc[1], f"obj {obj}", fontsize=8, color=color)
+        #ax.text(loc[0], loc[1], f"obj {obj}", fontsize=8, color=color)
 
         # record a handle for the legend (one per objective)
         if obj not in poi_handles:
@@ -100,11 +100,11 @@ def plot_environment(ax, env_instance, show_poi_radii=True):
         ax.text(a[0], a[1], f"A{i}", fontsize=8, color='k')
 
     # Add a legend entry for POI objectives
-    if poi_handles:
-        sorted_objs = sorted(poi_handles.keys())
-        handles = [poi_handles[o] for o in sorted_objs]
-        labels = [f"POI obj {o}" for o in sorted_objs]
-        ax.legend(handles=handles, labels=labels, fontsize=8, loc='upper right')
+    #if poi_handles:
+    #    sorted_objs = sorted(poi_handles.keys())
+    #    handles = [poi_handles[o] for o in sorted_objs]
+    #    labels = [f"POI obj {o}" for o in sorted_objs]
+    #    ax.legend(handles=handles, labels=labels, fontsize=8, loc='upper right')
 
 
 def extract_positions_from_traj(trajectory):
@@ -183,27 +183,28 @@ def plot_episode(csv_path, env_yaml_path, gen, rollout_id, output_dir='episode_p
 
     return save_path
 
+if False:  # example usage
+    if __name__ == '__main__':
+        import argparse
 
-if __name__ == '__main__':
-    import argparse
+        parser = argparse.ArgumentParser(description='Plot agent trajectories for a saved rollout')
+        parser.add_argument('--exp', default='test_1', help='Experiment folder under data/')
+        parser.add_argument('--gen', type=int, default=0, help='Generation number')
+        parser.add_argument('--id', type=int, default=0, help='Rollout id')
+        parser.add_argument('--outdir', default='episode_plots', help='Output directory for plots')
+        parser.add_argument('--no-show', action='store_true', help='Do not display the plot')
 
-    parser = argparse.ArgumentParser(description='Plot agent trajectories for a saved rollout')
-    parser.add_argument('--exp', default='test_1', help='Experiment folder under data/')
-    parser.add_argument('--gen', type=int, default=0, help='Generation number')
-    parser.add_argument('--id', type=int, default=0, help='Rollout id')
-    parser.add_argument('--outdir', default='episode_plots', help='Output directory for plots')
-    parser.add_argument('--no-show', action='store_true', help='Do not display the plot')
+        args = parser.parse_args()
 
-    args = parser.parse_args()
+        csv_path = os.path.join('data', args.exp, 'savedata.csv')
+        if not os.path.exists(csv_path):
+            raise FileNotFoundError(f"Could not find savedata.csv at {csv_path}")
 
-    csv_path = os.path.join('data', args.exp, 'savedata.csv')
-    if not os.path.exists(csv_path):
-        raise FileNotFoundError(f"Could not find savedata.csv at {csv_path}")
+        env_yaml_path = os.path.join('data', args.exp, 'env_instance.yaml')
 
-    env_yaml_path = os.path.join('data', args.exp, 'env_instance.yaml')
-
-    save_path = plot_episode(csv_path=csv_path, env_yaml_path=env_yaml_path, gen=args.gen, rollout_id=args.id, output_dir=args.outdir, show=not args.no_show)
-    print(f"Saved episode plot to: {save_path}")
+        save_path = plot_episode(csv_path=csv_path, env_yaml_path=env_yaml_path, gen=args.gen, rollout_id=args.id, output_dir=args.outdir, show=not args.no_show)
+        print(f"Saved episode plot to: {save_path}")
+        
 # -----------------------------
 
 if __name__ == "__main__":
@@ -250,26 +251,28 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     
-    csv_path = os.path.join("data", args.exp, "savedata.csv")
+    csv_path = os.path.join("data", "hpc_time_obj1_full", "time_obj_1", args.exp, "savedata.csv")
 
     if not os.path.exists(csv_path):
         raise FileNotFoundError(
             f"Could not find savedata.csv at {csv_path}"
         )
 
-    env_img_path = (
-        args.env
-        if args.env is not None
-        else os.path.join("data", args.exp, "env_instance.png")
+    env_yaml_path = (
+    args.env
+    if args.env is not None
+    else os.path.join(
+        "data",
+        "hpc_time_obj1_full",
+        "time_obj_1",
+        args.exp,
+        "env_instance.yaml",
     )
-    if not os.path.exists(env_img_path):
-        raise FileNotFoundError(
-            f"Could not find environment image at {env_img_path}"
-        )
+)
         
     save_path = plot_episode(
         csv_path=csv_path,
-        env_img_path=env_img_path,
+        env_yaml_path=env_yaml_path,
         gen=args.gen,
         rollout_id=args.id,
         output_dir=args.outdir,
